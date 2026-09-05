@@ -1,0 +1,29 @@
+:root {
+  --bg: #111317;
+  --low: #1a1c1f;
+  --box: #282a2d;
+  --text: #f4f5f7;
+  --muted: #c4c7ce;
+  --orange: #ff6347;
+  --gold: #ffd080;
+  --green: #58e0a7;
+  --blue: #8edbff;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+.auth-tabs {
+  grid-template-columns: repeat(2, 1fr) !important;
+}
