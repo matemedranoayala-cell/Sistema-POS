@@ -43,5 +43,12 @@ class KombatManagerControllers:
     def listar_alumnos(self, request):
         return JsonResponse({"status": "ok", "data": []})
 
-    def listar_inventario(self, request):
-        return JsonResponse({"status": "ok", "data": []})
+    def listar_inventario(self, request, inventario_use_case):
+        if request.method != 'GET':
+            return JsonResponse({"error": "Método no permitido"}, status=405)
+
+        try:
+            productos = inventario_use_case.ejecutar()
+            return JsonResponse({"status": "ok", "data": productos})
+        except Exception as e:
+            return JsonResponse({"status": "error", "mensaje": str(e)}, status=500)

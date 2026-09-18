@@ -22,3 +22,25 @@ class Usuario(models.Model):
         managed = False
         db_table = 'usuario'
         app_label = 'core_db'
+
+
+
+class Producto(models.Model):
+    cod_producto = models.CharField(primary_key=True, max_length=50)
+    tipo = models.CharField(max_length=50)
+
+    class Meta:
+        managed = False
+        db_table = 'producto'
+        app_label = 'core_db'
+
+
+class InventarioProductoAlmacenar(models.Model):
+    num_suplementos = models.IntegerField(primary_key=True)
+    cod_producto = models.CharField(max_length=50)
+    cantidad_almacenada = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        managed = False
+        db_table = 'inventario_producto_almacenar'
+        app_label = 'core_db'

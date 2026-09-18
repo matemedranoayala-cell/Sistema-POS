@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from datetime import date
 from core.entities.membresia import Membresia
 from core.entities.usuario import Usuario
+from core.entities.producto import Producto
 
 class IMembresiaRepository(ABC):
     @abstractmethod
@@ -21,3 +22,9 @@ class IUsuarioRepository(ABC):
     @abstractmethod
     def obtener_por_credenciales(self, username: str, password_plana: str) -> Usuario | None:
         pass
+
+class IProductoRepository(ABC):
+    @abstractmethod
+    def obtener_catalogo_disponible(self) -> list[Producto]:
+        pass
+    
