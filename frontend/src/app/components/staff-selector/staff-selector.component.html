@@ -1,0 +1,25 @@
+<div class="staff-section">
+  <div class="section-heading">
+    <span>Cajero en Turno:</span>
+    <button type="button" class="change-staff" (click)="onChangeStaff()">↻ Cambiar cajero</button>
+  </div>
+
+  <div class="staff-grid">
+    @for (member of staff; track member.initials) {
+      <button
+        type="button"
+        class="staff-card"
+        [class.active]="selectedStaff.initials === member.initials"
+        (click)="selectMember(member)"
+      >
+        <span class="staff-avatar" [class.active-avatar]="selectedStaff.initials === member.initials">
+          {{ member.initials }}
+        </span>
+        <span class="staff-data">
+          <strong>{{ member.shortName }}</strong>
+          <small>{{ member.schedule }}</small>
+        </span>
+      </button>
+    }
+  </div>
+</div>
