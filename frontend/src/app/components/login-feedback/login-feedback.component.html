@@ -1,0 +1,6 @@
+@if (message) {
+  <div class="login-feedback" [class.error]="!loginSuccess">
+    <span>{{ loginSuccess ? '✓' : '!' }}</span>
+    {{ message }}
+  </div>
+}

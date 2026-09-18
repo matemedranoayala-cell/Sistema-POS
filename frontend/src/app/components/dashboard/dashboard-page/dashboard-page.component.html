@@ -1,0 +1,23 @@
+<div class="dashboard-page">
+  <app-dashboard-header
+    [staff]="staff"
+    (logoutRequested)="logoutRequested.emit()"
+  ></app-dashboard-header>
+
+  <app-quick-actions></app-quick-actions>
+
+  <main class="dashboard-main">
+    <app-dashboard-metrics></app-dashboard-metrics>
+
+    <div class="dashboard-columns">
+      <section class="dashboard-primary-column">
+        <app-access-control></app-access-control>
+        <app-income-performance></app-income-performance>
+      </section>
+
+      <app-store-panel></app-store-panel>
+    </div>
+  </main>
+
+  <app-dashboard-footer></app-dashboard-footer>
+</div>

@@ -1,0 +1,9 @@
+<div class="auth-tabs">
+  <button type="button" [class.active]="authMode === 'pin'" (click)="setMode('pin')">
+    <span>⌨</span>PIN RÁPIDO
+  </button>
+
+  <button type="button" [class.active]="authMode === 'pass'" (click)="setMode('pass')">
+    <span>🔑</span>CREDENCIALES
+  </button>
+</div>

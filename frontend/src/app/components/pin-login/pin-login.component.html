@@ -1,0 +1,27 @@
+<div class="auth-view pin-view">
+  <p class="instruction">Ingresa tu código PIN operativo (4 dígitos)</p>
+
+  <div class="pin-dots">
+    @for (dot of [0, 1, 2, 3]; track dot) {
+      <div class="pin-dot" [class.filled]="dot < enteredPin.length"></div>
+    }
+  </div>
+
+  <div class="keypad">
+    <button type="button" (click)="onDigit('1')">1</button>
+    <button type="button" (click)="onDigit('2')">2</button>
+    <button type="button" (click)="onDigit('3')">3</button>
+
+    <button type="button" (click)="onDigit('4')">4</button>
+    <button type="button" (click)="onDigit('5')">5</button>
+    <button type="button" (click)="onDigit('6')">6</button>
+
+    <button type="button" (click)="onDigit('7')">7</button>
+    <button type="button" (click)="onDigit('8')">8</button>
+    <button type="button" (click)="onDigit('9')">9</button>
+
+    <button type="button" class="secondary-key" (click)="onClear()">C</button>
+    <button type="button" (click)="onDigit('0')">0</button>
+    <button type="button" class="secondary-key" (click)="onBackspace()">←</button>
+  </div>
+</div>
