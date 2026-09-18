@@ -119,14 +119,14 @@ export class LoginPageComponent {
     this.passwordVisible = !this.passwordVisible;
   }
 
-  triggerLogin(): void {
+  async triggerLogin(): Promise<void> {
     if (this.authMode === 'pin' && this.enteredPin.length !== 4) {
       this.loginSuccess = false;
       this.loginMessage = 'Ingresa un PIN de 4 dígitos.';
       return;
     }
 
-    const validLogin = this.authService.login(
+    const validLogin = await this.authService.login(
       this.selectedStaff,
       this.authMode,
       this.enteredPin,
