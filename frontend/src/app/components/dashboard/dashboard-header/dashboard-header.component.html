@@ -1,0 +1,50 @@
+<header class="dashboard-header">
+  <div class="dashboard-statusbar">
+    <div class="status-group">
+      <span class="online-status"><span class="pulse-dot"></span> ONLINE · RECEPCIÓN CENTRAL</span>
+      <span class="status-divider">|</span>
+      <span class="desktop-only">SEDE ALTITUD MMA</span>
+      <span class="status-divider desktop-only">|</span>
+      <span class="wide-only">TORNIQUETES: <strong>SINCRO CANAL 04</strong></span>
+    </div>
+    <div class="status-group">
+      <span>◷ 19:42 BOT</span>
+      <span class="status-divider">|</span>
+      <span class="wide-only">Bolivia (BOB / Bs)</span>
+    </div>
+  </div>
+
+  <div class="dashboard-nav">
+    <div class="dashboard-brand">
+      <div class="dashboard-logo">KM</div>
+      <div>
+        <div class="brand-line">
+          <h1>Kombat Manager</h1>
+          <span class="version-badge">PRO v4.5</span>
+        </div>
+        <p>Altitud MMA Combat Center</p>
+      </div>
+    </div>
+
+    <nav class="dashboard-links">
+      <a class="active" href="#" (click)="$event.preventDefault()">● Panel Recepción</a>
+      <a href="#" (click)="$event.preventDefault()">Alumnos &amp; Membresías</a>
+      <a href="#" (click)="$event.preventDefault()">Asistencia &amp; Tatami</a>
+      <a href="#" (click)="$event.preventDefault()">Caja &amp; Turno</a>
+      <a href="#" (click)="$event.preventDefault()">Tienda &amp; Suplementos</a>
+      <a href="#" (click)="$event.preventDefault()">Reportes</a>
+    </nav>
+
+    <div class="operator-area">
+      <div class="operator-card">
+        <div class="operator-avatar">{{ staff.initials }}</div>
+        <div class="operator-info">
+          <strong>{{ staff.shortName }}</strong>
+          <small>{{ staff.role }} ({{ staff.schedule }})</small>
+        </div>
+        <span class="shift-badge">● TURNO ACTIVO</span>
+      </div>
+      <button class="dashboard-button secondary" type="button" (click)="logoutRequested.emit()">Cerrar sesión</button>
+    </div>
+  </div>
+</header>

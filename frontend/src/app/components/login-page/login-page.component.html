@@ -1,21 +1,12 @@
+@if (loggedIn) {
+  <app-dashboard-page
+    [staff]="selectedStaff"
+    (logoutRequested)="logout()"
+  ></app-dashboard-page>
+} @else {
 <div class="pos-app">
   <app-status-bar></app-status-bar>
 
-  @if (loggedIn) {
-    <main class="logged-content">
-      <section class="welcome-card">
-        <span class="welcome-icon">✓</span>
-        <p class="welcome-label">ACCESO AUTORIZADO</p>
-        <h1>Bienvenido, {{ selectedStaff.name }}</h1>
-        <p>Tu sesión de Kombat Manager está activa.</p>
-        <div class="welcome-details">
-          <span>Rol: <strong>{{ selectedStaff.role }}</strong></span>
-          <span>Turno: <strong>{{ selectedStaff.schedule }}</strong></span>
-        </div>
-        <button type="button" class="logout-button" (click)="logout()">Cerrar sesión</button>
-      </section>
-    </main>
-  } @else {
   <main class="main-content">
     <div class="main-container">
       <div class="layout-grid">
@@ -166,10 +157,10 @@
       </div>
     </div>
   </main>
-  }
 
   <footer class="footer">
     <span>KOMBAT MANAGER OS v4.2.0</span>
     <span>HARDWARE ENCRYPTED SESSION</span>
   </footer>
 </div>
+}

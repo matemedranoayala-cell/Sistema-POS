@@ -7,6 +7,7 @@ import { PinLoginComponent } from '../pin-login/pin-login.component';
 import { StaffMember, StaffSelectorComponent } from '../staff-selector/staff-selector.component';
 import { StatusBarComponent } from '../status-bar/status-bar.component';
 import { AuthService } from '../../services/auth.service';
+import { DashboardPageComponent } from '../dashboard/dashboard-page/dashboard-page.component';
 
 @Component({
   selector: 'app-login-page',
@@ -18,7 +19,8 @@ import { AuthService } from '../../services/auth.service';
     AuthModeTabsComponent,
     PinLoginComponent,
     CredentialsLoginComponent,
-    LoginFeedbackComponent
+    LoginFeedbackComponent,
+    DashboardPageComponent
   ],
   templateUrl: './login-page.component.html',
   styleUrls: ['./login-page.component.css']
