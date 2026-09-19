@@ -1,9 +1,208 @@
-<section class="quick-actions">
-  <div class="quick-title">⚡ <strong>ACCIONES DIRECTAS:</strong></div>
-  <div class="quick-buttons">
-    <button class="dashboard-button primary" type="button">＋ Inscribir Nuevo Alumno</button>
-    <button class="dashboard-button secondary" type="button">↻ Renovar Membresía</button>
-    <button class="dashboard-button secondary" type="button">▣ Registrar Venta Tienda</button>
-    <button class="dashboard-button danger" type="button">▤ Arqueo &amp; Cierre de Caja</button>
+<div class="acciones-directas">
+  <button class="btn-naranja" (click)="abrirInscripcion()">+ Inscribir Nuevo Alumno</button>
+  <button class="btn-oscuro" (click)="abrirRenovacion()">↻ Renovar Membresía</button>
+  <button class="btn-oscuro" (click)="abrirVenta()">▣ Registrar Venta Tienda</button>
+  <button class="btn-rojo" (click)="abrirCaja()">▤ Arqueo & Cierre de Caja</button>
+</div>
+
+<div class="modal-overlay" *ngIf="showInscripcionModal" (click)="cerrarModales()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title"><span class="icon-orange">+</span><h2>Inscribir Nuevo Alumno</h2></div>
+      <button class="close-btn" (click)="cerrarModales()">✖</button>
+    </div>
+    <div class="modal-body">
+      <form (submit)="guardarInscripcion(); $event.preventDefault()">
+        <h3 class="form-section-title">Datos Personales</h3>
+        <div class="form-grid">
+          <div class="input-group">
+            <label>Nombres</label>
+            <input type="text" name="nombres" [(ngModel)]="inscripcionData.nombres" placeholder="Ej. Juan Pérez" required>
+          </div>
+          <div class="input-group">
+            <label>CI</label>
+            <input type="text" name="ci" [(ngModel)]="inscripcionData.ci" placeholder="Ej. 1234567" required>
+          </div>
+          <div class="input-group">
+            <label>Teléfono</label>
+            <input type="text" name="telefono" [(ngModel)]="inscripcionData.telefono" placeholder="Ej. 77712345" required>
+          </div>
+          <div class="input-group">
+            <label>Nacimiento</label>
+            <input type="date" name="fechaNacimiento" [(ngModel)]="inscripcionData.fechaNacimiento" required>
+          </div>
+        </div>
+        <h3 class="form-section-title">Plan y Membresía</h3>
+        <div class="form-grid">
+          <div class="input-group">
+            <label>Disciplina</label>
+            <select name="disciplina" [(ngModel)]="inscripcionData.disciplina" required>
+              <option value="" disabled>Seleccionar...</option>
+              <option value="mma">MMA</option>
+              <option value="bjj">Jiu-Jitsu Brasileño</option>
+              <option value="muaythai">Muay Thai</option>
+              <option value="combo">Combo (Todas)</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Duración</label>
+            <select name="duracion" [(ngModel)]="inscripcionData.duracion" required>
+              <option value="1">Mensual</option>
+              <option value="3">Trimestral (-10%)</option>
+              <option value="6">Semestral (-15%)</option>
+              <option value="12">Anual (-20%)</option>
+            </select>
+          </div>
+        </div>
+        <div class="payment-section">
+          <div class="total-box">
+            <span>Total a Cobrar:</span>
+            <span class="monto">Bs {{ calcularTotalInscripcion() | number:'1.2-2' }}</span>
+          </div>
+          <div class="input-group">
+            <label>Método de Pago</label>
+            <div class="radio-group">
+              <label><input type="radio" name="pago" value="efectivo" [(ngModel)]="inscripcionData.pago"> Efectivo</label>
+              <label><input type="radio" name="pago" value="qr" [(ngModel)]="inscripcionData.pago"> QR</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="cerrarModales()">Cancelar</button>
+          <button type="submit" class="btn-submit">Completar Inscripción</button>
+        </div>
+      </form>
+    </div>
   </div>
-</section>
+</div>
+
+<div class="modal-overlay" *ngIf="showRenovacionModal" (click)="cerrarModales()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title"><span class="icon-orange">↻</span><h2>Renovar Membresía</h2></div>
+      <button class="close-btn" (click)="cerrarModales()">✖</button>
+    </div>
+    <div class="modal-body">
+      <form (submit)="guardarRenovacion(); $event.preventDefault()">
+        <div class="input-group" style="margin-bottom: 20px;">
+          <label>Buscar Alumno</label>
+          <input type="text" name="alumnoBusqueda" [(ngModel)]="renovacionData.alumnoBusqueda" placeholder="Ej. Juan Pérez o CI..." required>
+        </div>
+        <div class="form-grid">
+          <div class="input-group">
+            <label>Disciplina</label>
+            <select name="disciplina_ren" [(ngModel)]="renovacionData.disciplina" required>
+              <option value="mma">MMA</option>
+              <option value="bjj">Jiu-Jitsu Brasileño</option>
+              <option value="muaythai">Muay Thai</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Duración</label>
+            <select name="duracion_ren" [(ngModel)]="renovacionData.duracion" required>
+              <option value="1">Mensual</option>
+              <option value="3">Trimestral (-10%)</option>
+            </select>
+          </div>
+        </div>
+        <div class="payment-section">
+          <div class="total-box">
+            <span>Total a Cobrar:</span>
+            <span class="monto">Bs {{ calcularTotalRenovacion() | number:'1.2-2' }}</span>
+          </div>
+          <div class="input-group">
+            <label>Método de Pago</label>
+            <div class="radio-group">
+              <label><input type="radio" name="pagor" value="efectivo" [(ngModel)]="renovacionData.pagor"> Efectivo</label>
+              <label><input type="radio" name="pagor" value="qr" [(ngModel)]="renovacionData.pagor"> QR</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="cerrarModales()">Cancelar</button>
+          <button type="submit" class="btn-submit">Confirmar Renovación</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showVentaModal" (click)="cerrarModales()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title"><span class="icon-orange">▣</span><h2>Registrar Venta Tienda</h2></div>
+      <button class="close-btn" (click)="cerrarModales()">✖</button>
+    </div>
+    <div class="modal-body">
+      <form (submit)="guardarVenta(); $event.preventDefault()">
+        <div class="form-grid">
+          <div class="input-group">
+            <label>Producto</label>
+            <select name="producto" [(ngModel)]="ventaData.producto" required>
+              <option value="" disabled>Seleccionar...</option>
+              <option value="agua">Botella de Agua 500ml</option>
+              <option value="venda">Vendas 4mts</option>
+              <option value="guantes">Guantes MMA 4oz</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Cantidad</label>
+            <input type="number" name="cantidad" [(ngModel)]="ventaData.cantidad" min="1" required>
+          </div>
+        </div>
+        <div class="payment-section">
+          <div class="total-box"><span>Total a Cobrar:</span><span class="monto">Bs 150.00</span></div>
+          <div class="input-group">
+            <label>Método de Pago</label>
+            <div class="radio-group">
+              <label><input type="radio" name="pagov" value="efectivo" [(ngModel)]="ventaData.pagov"> Efectivo</label>
+              <label><input type="radio" name="pagov" value="qr" [(ngModel)]="ventaData.pagov"> QR</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="cerrarModales()">Cancelar</button>
+          <button type="submit" class="btn-submit">Registrar Venta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showCajaModal" (click)="cerrarModales()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title"><span class="icon-orange" style="color: #ef4444;">▤</span><h2>Arqueo & Cierre de Caja</h2></div>
+      <button class="close-btn" (click)="cerrarModales()">✖</button>
+    </div>
+    <div class="modal-body">
+      <form (submit)="guardarCaja(); $event.preventDefault()">
+        <h3 class="form-section-title">Resumen del Turno</h3>
+        <div class="form-grid">
+          <div class="input-group">
+            <label>Base Inicial</label>
+            <input type="text" value="Bs 300.00" disabled>
+          </div>
+          <div class="input-group">
+            <label>Ingresos Hoy</label>
+            <input type="text" value="Bs 3250.00" disabled>
+          </div>
+        </div>
+        <div class="input-group" style="margin-bottom: 25px;">
+          <label>Observaciones / Gastos Extra</label>
+          <input type="text" name="observaciones" [(ngModel)]="cajaData.observaciones" placeholder="Ej. Pago de botellones de agua...">
+        </div>
+        <div class="payment-section" style="border-color: #ef4444; background-color: rgba(239, 68, 68, 0.05);">
+          <div class="total-box">
+            <span style="color: #ef4444; font-weight: bold;">Efectivo a Entregar:</span>
+            <span class="monto" style="color: #ffffff;">Bs 3550.00</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="cerrarModales()">Cancelar</button>
+          <button type="submit" class="btn-submit" style="background-color: #ef4444;">Confirmar Cierre</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

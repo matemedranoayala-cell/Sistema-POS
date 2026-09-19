@@ -1,166 +1,90 @@
-@if (loggedIn) {
-  <app-dashboard-page
-    [staff]="selectedStaff"
-    (logoutRequested)="logout()"
-  ></app-dashboard-page>
-} @else {
-<div class="pos-app">
-  <app-status-bar></app-status-bar>
+<div class="login-wrapper">
+  <div class="login-box">
 
-  <main class="main-content">
-    <div class="main-container">
-      <div class="layout-grid">
-        <section class="login-panel">
-          <div class="ambient-glow"></div>
+    <div class="clock-pill">
+      <span class="pulse-dot"></span>
+      <span class="time-text">{{ currentTime }}</span>
+    </div>
 
-          <div class="panel-content">
-            <div class="terminal-header">
-              <div class="brand">
-                <div class="logo">KM</div>
-
-                <div>
-                  <div class="brand-title">
-                    <span>KOMBAT MANAGER</span>
-                    <span class="pro-badge">PRO</span>
-                  </div>
-                  <p>POS &amp; ACCESO OPERATIVO v2.4</p>
-                </div>
-              </div>
-
-              <div class="shift-status">
-                <span class="status-dot green"></span>
-                <span>CAJA #01 • TURNO ABIERTO</span>
-              </div>
-            </div>
-
-            <app-staff-selector
-              [staff]="staff"
-              [selectedStaff]="selectedStaff"
-              (staffSelected)="selectStaff($event)"
-              (changeStaff)="clearPin()"
-            ></app-staff-selector>
-
-            <app-auth-mode-tabs [authMode]="authMode" (modeChange)="switchAuthMode($event)"></app-auth-mode-tabs>
-
-            @switch (authMode) {
-              @case ('pin') {
-                <app-pin-login
-                  [enteredPin]="enteredPin"
-                  (digitPressed)="pressPin($event)"
-                  (clear)="clearPin()"
-                  (backspace)="backspacePin()"
-                ></app-pin-login>
-              }
-              @case ('pass') {
-                <app-credentials-login
-                  [passwordVisible]="passwordVisible"
-                  [username]="username"
-                  [password]="password"
-                  (usernameChange)="username = $event"
-                  (passwordChange)="password = $event"
-                  (passwordVisibleChange)="passwordVisible = $event"
-                ></app-credentials-login>
-              }
-            }
-
-            <div class="session-section">
-              <div class="session-info">
-                <div>
-                  <span>▣</span>
-                  <span>Turno Asignado: <strong>Matutino (Caja Central)</strong></span>
-                </div>
-
-                <label class="auto-open">
-                  <input type="checkbox" checked />
-                  <span>Apertura Automática</span>
-                </label>
-              </div>
-
-              <button type="button" class="login-button" (click)="triggerLogin()">
-                <span>→</span>
-                <span>Iniciar Turno / Entrar al POS</span>
-              </button>
-
-              <app-login-feedback [message]="loginMessage" [loginSuccess]="loginSuccess"></app-login-feedback>
-
-              <div class="security-footer">
-                <span>🔒 Conexión Cifrada SSL 256-bit</span>
-                <span>Soporte Mesa de Ayuda: <strong>Ext. 404</strong></span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="hero-panel">
-          <div class="hero-background"></div>
-          <div class="hero-overlay"></div>
-
-          <div class="hero-content">
-            <div class="hero-top">
-              <div class="system-tag">
-                <span class="red-dot"></span>
-                SISTEMA COMBAT PERFORMANCE
-              </div>
-
-              <h1>
-                STRIKE HARD.
-                <span>GESTIÓN TOTAL.</span>
-              </h1>
-
-              <p>
-                Control instantáneo de torniquetes, membresías de combate, ventas en caja y programación de octágono.
-              </p>
-            </div>
-
-            <div class="telemetry">
-              <div class="telemetry-header">
-                <span>◉ TELEMETRÍA EN DIRECTO</span>
-                <strong>100% OPERATIVO</strong>
-              </div>
-
-              <div class="metrics">
-                <div class="metric">
-                  <small>Atletas en Instalación</small>
-                  <div>
-                    <strong>142</strong>
-                    <span>+18 última hora</span>
-                  </div>
-                </div>
-
-                <div class="metric">
-                  <small>Ocupación Tatami &amp; Cage</small>
-                  <div>
-                    <strong>88%</strong>
-                    <span>Cap. Alta</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="ongoing-session">
-                <div class="session-icon">⚡</div>
-                <div class="session-text">
-                  <strong>Muay Thai Avanzado // R-04</strong>
-                  <small>Octágono B • Head Coach Marcos</small>
-                </div>
-                <span>19:00 - 20:30</span>
-              </div>
-
-              <div class="hardware-status">
-                <span>● Torniquetes RFID: Sincronizados</span>
-                <span>● Impresora Térmica: Lista</span>
-              </div>
-            </div>
-
-            <div class="hero-footer">DISCIPLINA // VELOCIDAD // POTENCIA FINANCIERA</div>
-          </div>
-        </section>
+    <div class="header">
+      <div class="brand">
+        <img src="/kombat_managerpp.jpg" alt="Altitud Logo" class="logo" (click)="triggerSecretAdmin()">
+        <div class="brand-text">
+          <h1>KOMBAT MANAGER</h1>
+          <p>ACCESO OPERATIVO</p>
+        </div>
       </div>
     </div>
-  </main>
 
-  <footer class="footer">
-    <span>KOMBAT MANAGER OS v4.2.0</span>
-    <span>HARDWARE ENCRYPTED SESSION</span>
-  </footer>
+    <div class="branch-selector">
+      <span class="section-title">SUCURSAL ACTIVA</span>
+      <div class="branch-buttons">
+        <button
+          *ngFor="let sucursal of sucursales"
+          type="button"
+          [class.active]="sucursal === sucursalSeleccionada"
+          (click)="seleccionarSucursal(sucursal)">
+          {{ sucursal }}
+        </button>
+      </div>
+    </div>
+
+    <form (submit)="triggerLogin(); $event.preventDefault()">
+
+      <div class="users-section" *ngIf="!showSecretLogin">
+        <span class="section-title">SELECCIONAR OPERADOR</span>
+        <div class="cards-grid">
+          <div
+            *ngFor="let user of usuariosPreguardados"
+            class="user-card"
+            [class.selected]="usuarioSeleccionado.id === user.id"
+            (click)="seleccionarUsuario(user)">
+
+            <div class="avatar-container">
+              <div class="avatar">{{ user.iniciales }}</div>
+              <div class="check-icon" *ngIf="usuarioSeleccionado.id === user.id">✓</div>
+            </div>
+
+            <div class="user-info">
+              <span class="user-name">{{ user.nombre }}</span>
+              <span class="user-role">{{ user.rol }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="secret-login-section" *ngIf="showSecretLogin">
+        <div class="secret-header">
+          <span class="section-title">ACCESO SUPER ADMIN</span>
+          <span class="cancel-secret" (click)="cancelSecretLogin()">Volver</span>
+        </div>
+        <div class="input-group">
+          <label>USUARIO MAESTRO</label>
+          <input type="text" [(ngModel)]="usernameManual" name="usernameManual" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="password-section">
+        <div class="input-group">
+          <label>CONTRASEÑA</label>
+          <input type="password" [(ngModel)]="password" name="password" required>
+        </div>
+
+        <label class="checkbox-container">
+          <input type="checkbox" [(ngModel)]="keepSession" name="keepSession">
+          <span class="checkmark"></span>
+          Mantener sesión iniciada
+        </label>
+      </div>
+
+      <div *ngIf="loginMessage" class="error-message">
+        {{ loginMessage }}
+      </div>
+
+      <button type="submit" class="neon-btn" [disabled]="isLoading">
+        {{ isLoading ? 'VERIFICANDO...' : 'INICIAR TURNO' }}
+      </button>
+
+    </form>
+  </div>
 </div>
-}
