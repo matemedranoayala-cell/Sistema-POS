@@ -1,3 +1,5 @@
 USUARIOS PREGUARDADOS
 Superadmin=     ADK
-                                              PASSWORD DE TODOS LOS USERS:      admin123
+                                             
+                                              
+  PASSWORD DE TODOS LOS USERS:      admin123
