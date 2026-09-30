@@ -1,0 +1,142 @@
+<div class="saas-layout-full">
+
+  <header class="top-header">
+    <div class="header-left">
+      <div class="avatar-org root-avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+      </div>
+      <h2>Kombat Manager | Núcleo Analítico</h2>
+      <span class="divider">|</span>
+      <span class="date">{{ fechaActual }}</span>
+    </div>
+    <div class="header-right">
+      <span style="color: #ef4444; font-weight: 700;">{{ usuarioActual }}</span>
+      <button class="btn-root" (click)="ejecutarAccionMantenimiento()">⚙️ Opciones Core</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+
+      <div class="page-title">
+        <h1>Inteligencia de Negocio y Auditoría</h1>
+        <p>Algoritmos predictivos, análisis de retención, mapa de calor de tráfico y registros forenses</p>
+      </div>
+
+      <div class="dashboard-columns mb-32">
+        <div class="list-container flex-2">
+          <h2>Mapa de Calor: Tráfico en Torniquetes</h2>
+          <p class="subtext">Densidad histórica de asistencia para optimización de horarios de entrenadores.</p>
+
+          <div class="heatmap-wrapper">
+            <div class="heatmap-y-axis">
+              <span *ngFor="let row of heatmapDias">{{ row.dia }}</span>
+            </div>
+            <div class="heatmap-grid-area">
+              <div class="heatmap-row" *ngFor="let row of heatmapDias">
+                <div class="heat-block" *ngFor="let val of row.valores" [ngClass]="'heat-' + val"></div>
+              </div>
+              <div class="heatmap-x-axis">
+                <span *ngFor="let hora of heatmapHoras">{{ hora }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="heat-legend">
+            <span class="legend-item"><div class="heat-block heat-low"></div> Vacío</span>
+            <span class="legend-item"><div class="heat-block heat-med"></div> Normal</span>
+            <span class="legend-item"><div class="heat-block heat-high"></div> Lleno</span>
+            <span class="legend-item"><div class="heat-block heat-max"></div> Pico Máximo</span>
+          </div>
+        </div>
+
+        <div class="flex-column flex-1">
+          <div class="list-container mb-24">
+            <h2>Predicción de Inventario (IA)</h2>
+            <p class="subtext">Basado en velocidad histórica de ventas.</p>
+
+            <div class="prediction-list">
+              <div class="prediction-card" *ngFor="let pred of prediccionesInventario" [ngClass]="pred.color">
+                <div class="pred-header">
+                  <strong>{{ pred.producto }}</strong>
+                  <span class="pred-tag">Agota: {{ pred.agotaEn }}</span>
+                </div>
+                <div class="pred-footer">
+                  <span>Probabilidad: {{ pred.confianza }}%</span>
+                  <button class="btn-order">{{ pred.sugerencia }}</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="list-container">
+            <h2>Análisis de Retención (Churn)</h2>
+            <div class="churn-stats">
+              <div class="stat-box">
+                <span>Inscritos (Mes)</span>
+                <strong class="text-green">+{{ churnData.nuevasInscripciones }}</strong>
+              </div>
+              <div class="stat-box">
+                <span>Bajas (Mes)</span>
+                <strong class="text-red">-{{ churnData.abandonos }}</strong>
+              </div>
+            </div>
+            <div class="churn-progress-bar">
+              <div class="progress-fill" [style.width.%]="churnData.tasaRetencion"></div>
+            </div>
+            <p class="churn-footer">Retención: <strong>{{ churnData.tasaRetencion }}%</strong> | Fuga en: <strong>Plan {{ churnData.planMayorFuga }}</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-columns">
+        <div class="list-container flex-2">
+          <h2>Auditoría Financiera Forense</h2>
+          <p class="subtext">Registro inmutable de anulaciones, descuentos manuales y modificaciones críticas.</p>
+
+          <div class="list-wrapper">
+            <div class="list-item" *ngFor="let audit of auditoriaForense">
+              <div class="item-time" style="width: 80px;">{{ audit.tiempo }}</div>
+
+              <div class="item-main" [ngClass]="audit.color">
+                <h4>{{ audit.accion }}</h4>
+                <p>{{ audit.detalle }}</p>
+              </div>
+
+              <div class="item-info">
+                <span class="info-user">👤 {{ audit.usuario }}</span>
+                <span class="info-ip">🌐 {{ audit.ip }}</span>
+              </div>
+
+              <div class="item-actions">
+                <span class="tag-criticidad" [ngClass]="audit.color">{{ audit.modulo }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="list-container flex-1">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0;">Personal en Línea</h2>
+            <span class="pulse-indicator"></span>
+          </div>
+
+          <div class="incoming-list">
+            <div class="staff-card" *ngFor="let empleado of personalEnLinea">
+              <div class="staff-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span class="dot" [ngClass]="empleado.color"></span>
+                  <strong>{{ empleado.nombre }}</strong>
+                </div>
+                <span class="role-badge">{{ empleado.rol }}</span>
+              </div>
+              <div class="staff-footer" [ngClass]="empleado.color">
+                {{ empleado.estado }} ({{ empleado.ubicacion }})
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>

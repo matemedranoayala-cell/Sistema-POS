@@ -1,0 +1,124 @@
+<div class="saas-layout-full">
+  <header class="top-header">
+    <div class="header-left">
+      <div class="avatar-org coach-avatar">EN</div>
+      <h2>Panel de Entrenador</h2>
+      <span class="divider">|</span>
+      <span class="date">{{ fechaActual }}</span>
+    </div>
+    <div class="header-right">
+      <span>{{ usuarioActual }}</span>
+      <span class="status-badge" [ngClass]="claseActiva ? 'green' : 'gray'">
+        {{ claseActiva ? 'EN CLASE' : 'ESPERANDO TURNO' }}
+      </span>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper" style="max-width: 1000px;">
+
+      <div class="page-title">
+        <h1>Gestión de Tatami</h1>
+        <p>Control de asistencia y reportes de equipamiento</p>
+      </div>
+
+      <div class="modules-grid">
+        <!-- BOTÓN DINÁMICO: Cambia de Iniciar a Finalizar -->
+        <div class="action-card" (click)="toggleClase()" [ngStyle]="{'border-color': claseActiva ? '#ef4444' : '#10b981'}">
+          <div class="card-icon" [ngStyle]="{'color': claseActiva ? '#ef4444' : '#10b981', 'background': claseActiva ? '#fef2f2' : '#f0fdf4'}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8" *ngIf="!claseActiva"></polygon><rect x="9" y="9" width="6" height="6" *ngIf="claseActiva"></rect></svg>
+          </div>
+          <div class="card-text">
+            <h3>{{ claseActiva ? 'Finalizar Clase' : 'Iniciar Clase' }}</h3>
+            <p>{{ claseActiva ? 'Cerrar sesión actual' : 'Comenzar entrenamiento' }}</p>
+          </div>
+        </div>
+
+        <div class="action-card mod-lista" (click)="abrirModal('lista')" [ngClass]="{'disabled-card': !claseActiva}">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+          <div class="card-text"><h3>Pasar Lista</h3><p>Marcar asistencia de alumnos</p></div>
+        </div>
+
+        <div class="action-card mod-reporte" (click)="abrirModal('reporte')">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+          <div class="card-text"><h3>Reportar Daño</h3><p>Avisar sobre equipos rotos</p></div>
+        </div>
+      </div>
+
+      <div class="list-container">
+        <h2>Atletas en el Tatami (Clase Actual)</h2>
+        <p style="font-size: 13px; color: #6b7280; margin-top: -10px; margin-bottom: 20px;">Alumnos que ya pasaron por el torniquete de recepción.</p>
+
+        <div class="list-wrapper">
+          <div class="list-item" *ngFor="let alumno of alumnosEnTatami">
+            <div class="item-main" [ngClass]="alumno.color">
+              <h4>{{ alumno.nombre }}</h4>
+              <p>{{ alumno.plan }}</p>
+            </div>
+            <div class="item-coach" style="width: 150px;">
+              <span style="font-size: 12px; font-weight: 600; color: #4b5563; background: #f3f4f6; padding: 4px 8px; border-radius: 4px;">{{ alumno.nivel }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODALES DEL COACH -->
+<div class="modal-overlay" *ngIf="mostrarModalLista || mostrarModalReporte">
+
+  <!-- MODAL ASISTENCIA -->
+  <div class="modal-content" *ngIf="mostrarModalLista">
+    <div class="modal-header"><h2>Asistencia: Muay Thai</h2><button class="btn-close" (click)="cerrarModales()">✕</button></div>
+    <div class="modal-body-scroll">
+      <div class="check-list">
+        <div class="check-item" *ngFor="let alumno of alumnosEnTatami; let i = index" (click)="marcarAsistencia(i)" [class.checked]="alumno.asistencia">
+          <div class="check-box">{{ alumno.asistencia ? '✓' : '' }}</div>
+          <div class="check-info">
+            <strong>{{ alumno.nombre }}</strong>
+            <span>{{ alumno.nivel }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-cancelar" (click)="cerrarModales()">Cancelar</button>
+      <button type="button" class="btn-guardar" (click)="guardarLista()">Guardar Lista</button>
+    </div>
+  </div>
+
+  <!-- MODAL REPORTE DE DAÑOS -->
+  <div class="modal-content" *ngIf="mostrarModalReporte">
+    <div class="modal-header"><h2>Reportar Daño de Equipo</h2><button class="btn-close" (click)="cerrarModales()">✕</button></div>
+    <form [formGroup]="reporteForm" (ngSubmit)="enviarReporte()" class="modal-form">
+      <div class="form-grid">
+        <div class="input-group full-width">
+          <label>Equipo Afectado</label>
+          <select formControlName="equipo" [class.invalid]="reporteForm.get('equipo')?.invalid && reporteForm.get('equipo')?.touched">
+            <option value="">Seleccione el equipo...</option>
+            <option value="saco">Saco de Boxeo</option>
+            <option value="tatami">Colchoneta / Tatami</option>
+            <option value="pads">Paos / Focos</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div class="input-group full-width">
+          <label>Nivel de Gravedad</label>
+          <select formControlName="gravedad" [class.invalid]="reporteForm.get('gravedad')?.invalid && reporteForm.get('gravedad')?.touched">
+            <option value="">Seleccione...</option>
+            <option value="leve">Leve (Se puede seguir usando)</option>
+            <option value="critico">Crítico (Peligroso, retirar uso)</option>
+          </select>
+        </div>
+        <div class="input-group full-width">
+          <label>Descripción del Problema</label>
+          <input type="text" formControlName="descripcion" placeholder="Ej. El saco #3 se rompió de la cadena superior..." [class.invalid]="reporteForm.get('descripcion')?.invalid && reporteForm.get('descripcion')?.touched">
+        </div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn-cancelar" (click)="cerrarModales()">Cancelar</button><button type="submit" class="btn-guardar" style="background: #ef4444;">Enviar Reporte Urgente</button></div>
+    </form>
+  </div>
+
+</div>

@@ -1,0 +1,208 @@
+<div class="saas-layout-full">
+  <header class="top-header">
+    <div class="header-left">
+      <div class="avatar-org">KM</div>
+      <h2>Kombat Manager</h2>
+      <span class="divider">|</span>
+      <span class="date">{{ fechaActual }}</span>
+    </div>
+    <div class="header-right">
+      <span>Operador: {{ usuarioActual }}</span>
+      <!-- Botón de arqueo se desactiva si la caja ya está cerrada -->
+      <button class="btn-arqueo" (click)="abrirModal('arqueo')" [disabled]="cajaCerrada">
+        {{ cajaCerrada ? 'Caja Cerrada' : 'Arqueo y Cierre' }}
+      </button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <div class="page-title">
+        <h1>Recepción y Ventas</h1>
+        <p>Panel de control operativo y accesos del día</p>
+      </div>
+
+      <div class="modules-grid">
+
+        <!-- TARJETA CON CANDADO: Inscribir -->
+        <div class="action-card mod-inscribir"
+             (click)="!cajaCerrada && abrirModal('inscripcion')"
+             [style.opacity]="cajaCerrada ? '0.5' : '1'"
+             [style.pointer-events]="cajaCerrada ? 'none' : 'auto'">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg></div>
+          <div class="card-text"><h3>Inscribir Nuevo Alumno</h3><p>Asignación a clases con cupo</p></div>
+        </div>
+
+        <!-- TARJETA CON CANDADO: Renovar -->
+        <div class="action-card mod-renovar"
+             (click)="!cajaCerrada && abrirModal('renovar')"
+             [style.opacity]="cajaCerrada ? '0.5' : '1'"
+             [style.pointer-events]="cajaCerrada ? 'none' : 'auto'">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></div>
+          <div class="card-text"><h3>Renovar Membresía</h3><p>Reactivación de planes vencidos</p></div>
+        </div>
+
+        <!-- TARJETAS DE LECTURA: Quedan liberadas para poder consultar datos -->
+        <div class="action-card mod-registros" (click)="abrirModal('registros')">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+          <div class="card-text"><h3>Registros de Hoy</h3><p>Inscripciones y tickets del día</p></div>
+        </div>
+
+        <div class="action-card mod-directorio" (click)="abrirModal('directorio')">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+          <div class="card-text"><h3>Directorio de Alumnos</h3><p>Tiempos restantes y estados</p></div>
+        </div>
+      </div>
+
+      <div class="list-container">
+        <h2>Control de Acceso y Torniquete</h2>
+        <div class="search-bar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+
+          <!-- INPUT Y BOTÓN CON CANDADO -->
+          <input type="text" [(ngModel)]="dniTorniquete" placeholder="Escanear credencial o buscar DNI..." (keyup.enter)="registrarIngreso()" [disabled]="cajaCerrada" />
+          <button class="btn-primary" (click)="registrarIngreso()" [disabled]="cajaCerrada">Marcar Ingreso</button>
+        </div>
+
+        <div class="list-wrapper">
+          <div class="list-item" *ngFor="let acceso of ultimosAccesos">
+            <div class="item-time">{{ acceso.hora }}</div>
+            <div class="item-main" [ngClass]="acceso.color">
+              <h4>{{ acceso.nombre }}</h4>
+              <p>{{ acceso.plan }}</p>
+            </div>
+            <div class="item-coach">Coach: {{ acceso.coach }}</div>
+            <div class="item-actions">
+              <span class="status-badge" [ngClass]="acceso.color">{{ acceso.estado }}</span>
+              <button class="btn-view" (click)="abrirModal('perfil', acceso)">Ver Perfil</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalInscripcion || mostrarModalRenovar || mostrarModalRegistros || mostrarModalDirectorio || mostrarModalArqueo || mostrarModalPerfil">
+
+  <!-- MODAL: Inscripción -->
+  <div class="modal-content" *ngIf="mostrarModalInscripcion">
+    <div class="modal-header"><h2>Registro de Nuevo Alumno</h2><button class="btn-close" (click)="cerrarModales()">✕</button></div>
+    <form [formGroup]="inscripcionForm" (ngSubmit)="guardarAlumno()" class="modal-form">
+      <div class="form-grid">
+        <div class="input-group"><label>Nombres</label><input type="text" formControlName="nombre" [class.invalid]="inscripcionForm.get('nombre')?.invalid && inscripcionForm.get('nombre')?.touched"></div>
+        <div class="input-group"><label>Apellidos</label><input type="text" formControlName="apellidos" [class.invalid]="inscripcionForm.get('apellidos')?.invalid && inscripcionForm.get('apellidos')?.touched"></div>
+        <div class="input-group"><label>Carnet de Identidad (DNI)</label><input type="text" formControlName="dni" [class.invalid]="inscripcionForm.get('dni')?.invalid && inscripcionForm.get('dni')?.touched"></div>
+        <div class="input-group"><label>Teléfono</label><input type="text" formControlName="telefono" [class.invalid]="inscripcionForm.get('telefono')?.invalid && inscripcionForm.get('telefono')?.touched"></div>
+        <div class="input-group full-width"><label>Correo Electrónico</label><input type="email" formControlName="email" [class.invalid]="inscripcionForm.get('email')?.invalid && inscripcionForm.get('email')?.touched"></div>
+        <div class="input-group">
+          <label>Disciplina</label>
+          <select formControlName="disciplina_id" [class.invalid]="inscripcionForm.get('disciplina_id')?.invalid && inscripcionForm.get('disciplina_id')?.touched">
+            <option value="">Seleccione...</option><option value="1">Muay Thai</option><option value="2">Boxeo</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Plan</label>
+          <select formControlName="plan_id" [class.invalid]="inscripcionForm.get('plan_id')?.invalid && inscripcionForm.get('plan_id')?.touched">
+            <option value="">Seleccione...</option><option value="1">Ilimitado</option><option value="2">3x Semana</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn-cancelar" (click)="cerrarModales()">Cancelar</button><button type="submit" class="btn-guardar">Guardar</button></div>
+    </form>
+  </div>
+
+  <!-- MODAL: Renovar -->
+  <div class="modal-content" *ngIf="mostrarModalRenovar">
+    <div class="modal-header"><h2>Renovar Membresía</h2><button class="btn-close" (click)="cerrarModales()">✕</button></div>
+    <form [formGroup]="renovacionForm" (ngSubmit)="procesarRenovacion()" class="modal-form">
+      <div class="form-grid">
+        <div class="input-group full-width"><label>Buscar Alumno</label><input type="text" formControlName="dniBusqueda" placeholder="Ej. 8472910" [class.invalid]="renovacionForm.get('dniBusqueda')?.invalid && renovacionForm.get('dniBusqueda')?.touched"></div>
+        <div class="input-group">
+          <label>Nuevo Plan</label>
+          <select formControlName="nuevo_plan_id" [class.invalid]="renovacionForm.get('nuevo_plan_id')?.invalid && renovacionForm.get('nuevo_plan_id')?.touched">
+            <option value="">Seleccione...</option><option value="1">Mes Ilimitado (Bs 350)</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Método de Pago</label>
+          <select formControlName="metodo_pago" [class.invalid]="renovacionForm.get('metodo_pago')?.invalid && renovacionForm.get('metodo_pago')?.touched">
+            <option value="">Seleccione...</option><option value="efectivo">Efectivo</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn-cancelar" (click)="cerrarModales()">Cancelar</button><button type="submit" class="btn-guardar">Procesar</button></div>
+    </form>
+  </div>
+
+  <!-- MODAL: Registros de Hoy -->
+  <div class="modal-content modal-lg" *ngIf="mostrarModalRegistros">
+    <div class="modal-header"><h2>Transacciones de Hoy</h2><button class="btn-close" (click)="cerrarModales()">✕</button></div>
+    <div class="modal-body-scroll">
+      <table class="data-table">
+        <thead><tr><th>Hora</th><th>Tipo</th><th>Detalle</th><th>Monto</th></tr></thead>
+        <tbody>
+        <tr *ngFor="let reg of registrosDelDia">
+          <td>{{ reg.hora }}</td><td><strong>{{ reg.tipo }}</strong></td><td>{{ reg.detalle }}</td><td style="font-weight: 600;">{{ reg.monto }}</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MODAL: Directorio -->
+  <div class="modal-content modal-lg" *ngIf="mostrarModalDirectorio">
+    <div class="modal-header"><h2>Directorio de Alumnos</h2><button class="btn-close" (click)="cerrarModales()">✕</button></div>
+    <div class="modal-body-scroll">
+      <table class="data-table">
+        <thead><tr><th>Nombre Completo</th><th>DNI</th><th>Plan Actual</th><th>Vencimiento</th><th>Estado</th></tr></thead>
+        <tbody>
+        <tr *ngFor="let al of directorio">
+          <td style="font-weight: 600;">{{ al.nombre }}</td><td>{{ al.dni }}</td><td>{{ al.plan }}</td><td>{{ al.vencimiento }}</td>
+          <td><span class="status-badge" [ngClass]="al.color">{{ al.estado }}</span></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MODAL: Arqueo -->
+  <div class="modal-content" *ngIf="mostrarModalArqueo">
+    <div class="modal-header"><h2>Arqueo y Cierre</h2><button class="btn-close" (click)="cerrarModales()">✕</button></div>
+    <form [formGroup]="arqueoForm" (ngSubmit)="procesarArqueo()" class="modal-form">
+      <div class="form-grid">
+        <div class="input-group full-width" style="background: #f3f4f6; padding: 16px; border-radius: 8px;">
+          <p style="margin: 0 0 8px 0; font-size: 14px; color: #4b5563;">Efectivo Teórico:</p>
+          <h3 style="margin: 0; font-size: 24px;">Bs 1,250.00</h3>
+        </div>
+        <div class="input-group full-width"><label>Efectivo Físico Contado</label><input type="number" formControlName="montoFisico"></div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn-cancelar" (click)="cerrarModales()">Cancelar</button><button type="submit" class="btn-guardar" style="background: #111827;">Confirmar Cierre</button></div>
+    </form>
+  </div>
+
+  <!-- MODAL: Perfil -->
+  <div class="modal-content" *ngIf="mostrarModalPerfil">
+    <div class="modal-header">
+      <h2>Perfil de Atleta</h2>
+      <button class="btn-close" (click)="cerrarModales()">✕</button>
+    </div>
+    <div class="modal-form" style="padding: 32px;">
+      <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 24px;">
+        <div style="width: 80px; height: 80px; border-radius: 50%; background: #e5e7eb; display: grid; place-items: center; font-size: 24px; font-weight: bold; color: #4b5563;">
+          {{ alumnoSeleccionado?.nombre.charAt(0) }}
+        </div>
+        <div>
+          <h3 style="margin: 0; font-size: 20px; color: #111827;">{{ alumnoSeleccionado?.nombre }}</h3>
+          <p style="margin: 4px 0 0 0; color: #6b7280;">{{ alumnoSeleccionado?.plan }}</p>
+          <span class="status-badge" [ngClass]="alumnoSeleccionado?.color" style="display: inline-block; margin-top: 8px;">{{ alumnoSeleccionado?.estado }}</span>
+        </div>
+      </div>
+      <div class="form-grid" style="padding: 0;">
+        <div class="input-group"><label>Coach Asignado</label><input type="text" [value]="alumnoSeleccionado?.coach" disabled></div>
+        <div class="input-group"><label>Hora de Ingreso</label><input type="text" [value]="alumnoSeleccionado?.hora" disabled></div>
+      </div>
+    </div>
+  </div>
+
+</div>

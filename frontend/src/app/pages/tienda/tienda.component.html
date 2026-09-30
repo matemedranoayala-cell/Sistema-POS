@@ -1,0 +1,177 @@
+<div class="saas-layout-full">
+  <header class="top-header">
+    <div class="header-left">
+      <div class="avatar-org tienda-avatar">KT</div>
+      <h2>Kiosko y Tienda</h2>
+      <span class="divider">|</span>
+      <span class="date">{{ fechaActual }}</span>
+    </div>
+    <div class="header-right">
+      <span>{{ usuarioActual }}</span>
+      <button class="btn-arqueo" (click)="abrirModal('arqueo')">Arqueo de Caja</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <div class="page-title">
+        <h1>Punto de Venta (POS)</h1>
+        <p>Venta de suplementos, bebidas y equipamiento deportivo</p>
+      </div>
+
+      <div class="modules-grid">
+        <div class="action-card mod-venta" (click)="abrirModal('pos')">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></div>
+          <div class="card-text"><h3>Nueva Venta</h3><p>Abrir caja registradora</p></div>
+        </div>
+
+        <div class="action-card mod-inventario" (click)="abrirModal('inventario')">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>
+          <div class="card-text"><h3>Gestión de Inventario</h3><p>Revisión y carga de stock</p></div>
+        </div>
+
+        <div class="action-card mod-reportes" (click)="abrirModal('reportes')">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div>
+          <div class="card-text"><h3>Reportes de Ventas</h3><p>Exportación a Excel y filtros</p></div>
+        </div>
+      </div>
+
+      <div class="dashboard-columns">
+        <div class="list-container flex-2">
+          <h2>Últimas Transacciones (Registro de Ventas)</h2>
+          <div class="list-wrapper">
+            <div class="list-item" *ngFor="let venta of ventasRecientes">
+              <div class="item-time" style="width: 80px;">{{ venta.hora }}</div>
+              <div class="item-main" [ngClass]="venta.color">
+                <h4>{{ venta.cliente }} <span style="color: #9ca3af; font-size: 12px; margin-left: 8px;">{{ venta.ticket }}</span></h4>
+                <p>{{ venta.items }}</p>
+              </div>
+              <div class="item-coach" style="font-weight: 600; color: #111827;">Bs {{ venta.total }}</div>
+              <div class="item-actions">
+                <span class="status-badge" [ngClass]="venta.color">{{ venta.estado }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="list-container flex-1">
+          <h2>Alertas de Stock Crítico</h2>
+          <div class="incoming-list">
+            <div class="incoming-card alert-card" *ngFor="let prod of inventarioCritico">
+              <div class="inc-info">
+                <strong>{{ prod.producto }}</strong>
+                <span>Stock: <b style="color: #ef4444;">{{ prod.stockActual }}</b> (Mín: {{ prod.minimo }})</span>
+              </div>
+              <button class="btn-restock">Reponer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- CAPA DE MODALES MULTIPLES -->
+<div class="modal-overlay" *ngIf="mostrarModalPOS || mostrarModalInventario || mostrarModalReportes || mostrarModalArqueo">
+
+  <!-- 1. MODAL POS (CAJA) -->
+  <div class="modal-pos" *ngIf="mostrarModalPOS">
+    <div class="pos-catalog">
+      <div class="pos-header">
+        <h2>Catálogo de Productos</h2>
+        <input type="text" placeholder="Buscar producto..." class="pos-search">
+      </div>
+      <div class="products-grid">
+        <div class="product-card" *ngFor="let prod of catalogo" (click)="agregarAlCarrito(prod)">
+          <div class="prod-color-bar" [ngClass]="'bg-' + prod.color"></div>
+          <h4>{{ prod.nombre }}</h4>
+          <span class="prod-cat">{{ prod.categoria }}</span>
+          <strong class="prod-price">Bs {{ prod.precio }}</strong>
+        </div>
+      </div>
+    </div>
+    <div class="pos-cart">
+      <div class="pos-header" style="justify-content: space-between;">
+        <h2>Ticket Actual</h2><button class="btn-close" (click)="cerrarModales()">✕</button>
+      </div>
+      <div class="cart-items">
+        <div *ngIf="carrito.length === 0" class="empty-cart"><p>Selecciona productos a la izquierda.</p></div>
+        <div class="cart-item" *ngFor="let item of carrito; let i = index">
+          <div class="cart-item-info"><strong>{{ item.nombre }}</strong><span>Bs {{ item.precio }} x {{ item.cantidad }}</span></div>
+          <div class="cart-item-actions"><strong>Bs {{ item.subtotal }}</strong><button class="btn-remove" (click)="quitarDelCarrito(i)">✕</button></div>
+        </div>
+      </div>
+      <div class="cart-footer">
+        <div class="cart-total"><span>TOTAL A COBRAR</span><span class="total-monto">Bs {{ totalCarrito }}</span></div>
+        <button class="btn-cobrar" [disabled]="carrito.length === 0" (click)="procesarVenta()">Cobrar Venta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. MODAL INVENTARIO -->
+  <div class="modal-content modal-lg" *ngIf="mostrarModalInventario">
+    <div class="modal-header"><h2>Gestión de Inventario</h2><button class="btn-close" (click)="cerrarModales()">✕</button></div>
+    <div class="modal-body-scroll">
+      <table class="data-table">
+        <thead><tr><th>Producto</th><th>Categoría</th><th>Precio Venta</th><th>Stock Físico</th><th>Acción</th></tr></thead>
+        <tbody>
+        <tr *ngFor="let prod of catalogo">
+          <td style="font-weight: 600;">{{ prod.nombre }}</td><td>{{ prod.categoria }}</td><td>Bs {{ prod.precio }}</td>
+          <td><span [style.color]="prod.stock < 5 ? '#ef4444' : '#10b981'" style="font-weight: bold;">{{ prod.stock }} unid.</span></td>
+          <td><button class="btn-view">Ajustar</button></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 3. MODAL REPORTES EXCEL -->
+  <div class="modal-content" *ngIf="mostrarModalReportes">
+    <div class="modal-header"><h2>Exportar Reporte (Excel)</h2><button class="btn-close" (click)="cerrarModales()">✕</button></div>
+    <form [formGroup]="reporteForm" (ngSubmit)="exportarAExcel()" class="modal-form">
+      <div class="form-grid">
+        <div class="input-group full-width">
+          <label>Filtrar por Categoría / Tipo de Producto</label>
+          <select formControlName="categoria">
+            <option value="todas">Todas las categorías</option>
+            <option value="bebidas">Solo Bebidas</option>
+            <option value="suplementos">Solo Suplementos</option>
+            <option value="equipamiento">Solo Equipamiento</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Desde (Fecha Inicial)</label>
+          <input type="date" formControlName="fechaInicio" [max]="fechaMaximaVisible" [class.invalid]="reporteForm.get('fechaInicio')?.invalid && reporteForm.get('fechaInicio')?.touched">
+        </div>
+        <div class="input-group">
+          <label>Hasta (Fecha Final)</label>
+          <!-- Atributo MAX inyectado para evitar saltar al futuro -->
+          <input type="date" formControlName="fechaFin" [max]="fechaMaximaVisible" [class.invalid]="reporteForm.get('fechaFin')?.invalid && reporteForm.get('fechaFin')?.touched">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancelar" (click)="cerrarModales()">Cancelar</button>
+        <button type="submit" class="btn-excel">📥 Descargar .XLSX</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 4. MODAL ARQUEO DE CAJA -->
+  <div class="modal-content" *ngIf="mostrarModalArqueo">
+    <div class="modal-header"><h2>Cierre de Caja Tienda</h2><button class="btn-close" (click)="cerrarModales()">✕</button></div>
+    <form [formGroup]="arqueoForm" (ngSubmit)="procesarArqueo()" class="modal-form">
+      <div class="form-grid">
+        <div class="input-group full-width" style="background: #f3f4f6; padding: 16px; border-radius: 8px;">
+          <p style="margin: 0 0 8px 0; font-size: 14px; color: #4b5563;">Ventas Registradas en Turno:</p>
+          <h3 style="margin: 0; font-size: 24px; color: #10b981;">Bs 845.00</h3>
+        </div>
+        <div class="input-group full-width">
+          <label>Efectivo Físico en Cajón (Bs)</label>
+          <input type="number" formControlName="montoFisico" [class.invalid]="arqueoForm.get('montoFisico')?.invalid && arqueoForm.get('montoFisico')?.touched">
+        </div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn-cancelar" (click)="cerrarModales()">Cancelar</button><button type="submit" class="btn-guardar" style="background: #111827;">Confirmar Cierre</button></div>
+    </form>
+  </div>
+
+</div>
