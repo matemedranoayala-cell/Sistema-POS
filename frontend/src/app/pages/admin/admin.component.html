@@ -1,0 +1,147 @@
+<div class="saas-layout-full">
+  <header class="top-header">
+    <div class="header-left">
+      <div class="avatar-org admin-avatar">AD</div>
+      <h2>Panel de Supervisión Administrativa</h2>
+      <span class="divider">|</span>
+      <span class="date">{{ fechaActual }}</span>
+    </div>
+    <div class="header-right">
+      <span>{{ usuarioActual }}</span>
+      <button class="btn-arqueo" (click)="abrirModalExportar()">Exportar Reporte Global</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+
+      <div class="page-title">
+        <h1>Centro de Control Operativo</h1>
+        <p>Supervisión en tiempo real de recepcionistas, tienda y entrenadores</p>
+      </div>
+
+      <div class="modules-grid">
+        <div class="action-card">
+          <div class="card-text">
+            <h3>Ingresos Consolidados</h3>
+            <p style="font-size: 24px; font-weight: 700; color: #111827; margin-top: 10px;">Bs {{ resumen.ingresosHoy }}</p>
+          </div>
+        </div>
+        <div class="action-card">
+          <div class="card-text">
+            <h3>Ocupación Global</h3>
+            <p style="font-size: 24px; font-weight: 700; color: #111827; margin-top: 10px;">{{ resumen.ocupacionTotal }} Atletas</p>
+          </div>
+        </div>
+        <div class="action-card mod-alerta">
+          <div class="card-text">
+            <h3>Alertas de Personal</h3>
+            <p style="font-size: 24px; font-weight: 700; color: #ef4444; margin-top: 10px;">{{ resumen.alertasPendientes }} Requieren Atención</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-columns">
+        <div class="list-container flex-2">
+          <h2>Logs y Movimientos de Caja (Recepción)</h2>
+          <div class="list-wrapper">
+            <div class="list-item" *ngFor="let log of logsRecepcion">
+              <div class="item-time" style="width: 80px;">{{ log.hora }}</div>
+              <div class="item-main" [ngClass]="log.color">
+                <h4>{{ log.operacion }}</h4>
+                <p>Resp: {{ log.usuario }}</p>
+              </div>
+              <div class="item-coach" style="font-weight: 600; color: #111827;">{{ log.monto }}</div>
+              <div class="item-actions">
+                <span class="status-badge" [ngClass]="log.color">{{ log.estado }}</span>
+                <button class="btn-view" (click)="abrirModalLog(log)">Revisar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="list-container flex-1">
+          <h2>Supervisión de Coaches</h2>
+          <p style="font-size: 13px; color: #6b7280; margin-top: -10px; margin-bottom: 20px;">Estado actual en el tatami.</p>
+          <div class="incoming-list">
+            <div class="incoming-card" *ngFor="let coach of supervisionCoaches" [ngClass]="{'alert-card': coach.color === 'orange'}">
+              <div class="inc-info">
+                <strong>{{ coach.nombre }}</strong>
+                <span>Ubicación: {{ coach.area }}</span>
+              </div>
+              <span class="status-text" [ngClass]="coach.color">{{ coach.estado }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- CAPA DE MODALES DEL ADMIN -->
+<div class="modal-overlay" *ngIf="mostrarModalExportar || mostrarModalLog">
+
+  <!-- MODAL EXPORTAR REPORTE -->
+  <div class="modal-content" *ngIf="mostrarModalExportar">
+    <div class="modal-header"><h2>Exportar Reporte Global</h2><button class="btn-close" (click)="cerrarModales()">✕</button></div>
+    <form [formGroup]="exportarForm" (ngSubmit)="generarReporte()" class="modal-form">
+      <div class="form-grid">
+        <div class="input-group full-width">
+          <label>Tipo de Reporte Consolidad</label>
+          <select formControlName="tipoReporte">
+            <option value="financiero">Flujo Financiero (Cajas y Ventas)</option>
+            <option value="asistencia">Tráfico y Asistencia General</option>
+            <option value="auditoria">Auditoría y Novedades de Personal</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Fecha Inicial</label>
+          <input type="date" formControlName="fechaInicio" [max]="fechaMaximaVisible" [class.invalid]="exportarForm.get('fechaInicio')?.invalid && exportarForm.get('fechaInicio')?.touched">
+        </div>
+        <div class="input-group">
+          <label>Fecha Final</label>
+          <input type="date" formControlName="fechaFin" [max]="fechaMaximaVisible" [class.invalid]="exportarForm.get('fechaFin')?.invalid && exportarForm.get('fechaFin')?.touched">
+        </div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn-cancelar" (click)="cerrarModales()">Cancelar</button><button type="submit" class="btn-guardar" style="background: #111827;">📥 Descargar PDF / Excel</button></div>
+    </form>
+  </div>
+
+  <!-- MODAL REVISAR LOG -->
+  <div class="modal-content" *ngIf="mostrarModalLog">
+    <div class="modal-header">
+      <h2>Revisión de Operación</h2>
+      <button class="btn-close" (click)="cerrarModales()">✕</button>
+    </div>
+    <div class="modal-form" style="padding: 32px;">
+      <div style="background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+          <span style="color: #6b7280; font-size: 13px; font-weight: 600;">Operación:</span>
+          <strong style="color: #111827;">{{ logSeleccionado?.operacion }}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+          <span style="color: #6b7280; font-size: 13px; font-weight: 600;">Responsable:</span>
+          <strong style="color: #111827;">{{ logSeleccionado?.usuario }}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+          <span style="color: #6b7280; font-size: 13px; font-weight: 600;">Monto Involucrado:</span>
+          <strong style="color: #ef4444;">{{ logSeleccionado?.monto }}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: #6b7280; font-size: 13px; font-weight: 600;">Estado Actual:</span>
+          <span class="status-badge" [ngClass]="logSeleccionado?.color">{{ logSeleccionado?.estado }}</span>
+        </div>
+      </div>
+      <div class="input-group full-width">
+        <label>Detalle y Justificación</label>
+        <textarea disabled style="padding: 12px; border-radius: 8px; border: 1px solid #d1d5db; background: #f3f4f6; color: #374151; font-family: 'Inter'; font-size: 13px; resize: none; height: 80px;">{{ logSeleccionado?.detalle }}</textarea>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content: space-between;">
+      <button type="button" class="btn-cancelar" (click)="cerrarModales()">Cerrar</button>
+      <button *ngIf="logSeleccionado?.color === 'red' || logSeleccionado?.color === 'orange'" type="button" class="btn-guardar" style="background: #10b981;" (click)="autorizarOperacion()">✓ Firmar y Autorizar</button>
+    </div>
+  </div>
+
+</div>

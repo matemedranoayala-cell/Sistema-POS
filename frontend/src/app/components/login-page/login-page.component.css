@@ -313,7 +313,7 @@
 .neon-btn:disabled {
   background-color: #4b5563;
   box-shadow: none;
-  color: #9ca3af;
+  color: #afa59c;
   cursor: not-allowed;
   transform: none;
 }

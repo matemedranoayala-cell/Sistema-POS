@@ -20,7 +20,7 @@ export class LoginPageComponent implements OnInit, OnDestroy {
 
   usuariosPreguardados = [
     { id: 'recepcion', nombre: 'Recepción', rol: 'Recepción', iniciales: 'RC' },
-    { id: 'encargado', nombre: 'Administrador', rol: 'Admin Head', iniciales: 'AD' }, // <-- id modificado
+    { id: 'encargado', nombre: 'Administrador', rol: 'Admin Head', iniciales: 'AD' },
     { id: 'entrenador', nombre: 'Entrenador', rol: 'Coach', iniciales: 'EN' }
   ];
 
@@ -94,26 +94,32 @@ export class LoginPageComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.loginMessage = '';
 
-    const response = await this.authService.login(activeUsername, this.password);
+    let backendUsername = activeUsername;
+    if (this.showSecretLogin && activeUsername === 'ADK') {
+      backendUsername = 'admin';
+    }
+
+    const response = await this.authService.login(backendUsername, this.password);
 
     if (response.success) {
       if (this.keepSession) {
         localStorage.setItem('kombat-keep-session', 'true');
       }
-      localStorage.setItem('kombat-branch', this.sucursalSeleccionada);
 
-      switch (response.rol) {
-        case 'SUPERADMIN':
-          this.router.navigate(['/superadmin']);
-          break;
-        case 'RECEPCIONISTA':
+      localStorage.setItem('kombat-branch', '1');
+
+      if (this.showSecretLogin && activeUsername === 'ADK') {
+        this.router.navigate(['/superadmin']);
+      } else if (this.showSecretLogin && activeUsername !== 'ADK') {
+        this.router.navigate(['/admin']);
+      } else {
+        if (activeUsername === 'recepcion') {
           this.router.navigate(['/recepcion']);
-          break;
-        case 'ENCARGADO_TIENDA':
-          this.router.navigate(['/tienda']);
-          break;
-        default:
+        } else if (activeUsername === 'encargado') {
+          this.router.navigate(['/admin']);
+        } else if (activeUsername === 'entrenador') {
           this.router.navigate(['/coach']);
+        }
       }
     } else {
       this.loginMessage = 'Credenciales incorrectas.';

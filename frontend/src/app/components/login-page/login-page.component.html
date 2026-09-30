@@ -16,19 +16,6 @@
       </div>
     </div>
 
-    <div class="branch-selector">
-      <span class="section-title">SUCURSAL ACTIVA</span>
-      <div class="branch-buttons">
-        <button
-          *ngFor="let sucursal of sucursales"
-          type="button"
-          [class.active]="sucursal === sucursalSeleccionada"
-          (click)="seleccionarSucursal(sucursal)">
-          {{ sucursal }}
-        </button>
-      </div>
-    </div>
-
     <form (submit)="triggerLogin(); $event.preventDefault()">
 
       <div class="users-section" *ngIf="!showSecretLogin">
