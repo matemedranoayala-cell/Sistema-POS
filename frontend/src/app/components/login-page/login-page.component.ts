@@ -17,9 +17,6 @@ export class LoginPageComponent implements OnInit, OnDestroy {
   currentTime = '';
   private timer: any;
 
-  sucursales = ['Zona Sur', 'Sopocachi', 'San Pedro'];
-  sucursalSeleccionada = 'Zona Sur';
-
   usuariosPreguardados = [
     { id: 'recepcion', nombre: 'Recepción', rol: 'Recepción', iniciales: 'RC' },
     { id: 'encargado', nombre: 'Administrador', rol: 'Admin Head', iniciales: 'AD' }
@@ -55,8 +52,6 @@ export class LoginPageComponent implements OnInit, OnDestroy {
     const now = new Date();
     this.currentTime = now.toLocaleTimeString('es-BO', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
   }
-
-  seleccionarSucursal(sucursal: string) { this.sucursalSeleccionada = sucursal; }
 
   seleccionarUsuario(usuario: any) {
     this.modoCoach = false;
@@ -109,7 +104,6 @@ export class LoginPageComponent implements OnInit, OnDestroy {
     const response = await this.authService.login(backendUsername, this.password);
 
     if (response.success) {
-      // --- REGISTRAR INICIO DE SESIÓN EN LA BITÁCORA ---
       try {
         await firstValueFrom(this.http.post('http://127.0.0.1:8000/api/bitacora/', {
           usuario: backendUsername,
@@ -120,7 +114,6 @@ export class LoginPageComponent implements OnInit, OnDestroy {
           color: 'blue'
         }));
       } catch (e) { console.error("No se pudo registrar el log", e); }
-      // -------------------------------------------------
 
       if (this.keepSession) { localStorage.setItem('kombat-keep-session', 'true'); }
       localStorage.setItem('kombat-branch', '1');

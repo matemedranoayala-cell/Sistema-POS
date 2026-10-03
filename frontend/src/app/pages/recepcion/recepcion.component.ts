@@ -8,7 +8,6 @@ import { AlumnoService } from '../../services/alumno.service';
 import { AsistenciaService } from '../../services/asistencia.service';
 import { RenovacionService } from '../../services/renovacion.service';
 
-// Importamos la misma constante de disciplinas que usa el Coach
 export const HORARIOS_KOMBAT = [
   { disciplina: 'Kickboxing', horarios: ['Lu/Mie/Vie 9:00-10:15', 'Lu/Mie 18:00-19:30', 'Mar/Jue 16:30-18:00', 'Mar/Jue 19:30-21:00'] },
   { disciplina: 'Brazilian Jiujitsu', horarios: ['Lu/Mie/Vie 7:00-8:30 AM', 'Lu/Mie/Vie 19:30-21:00'] },
@@ -38,7 +37,7 @@ export class RecepcionComponent implements OnInit {
 
   mostrarModalInscripcion = false;
   mostrarModalRenovar = false;
-  mostrarModalOpenMat = false; // NUEVO: Para visitas
+  mostrarModalOpenMat = false;
   mostrarModalRegistros = false;
   mostrarModalDirectorio = false;
   mostrarModalArqueo = false;
@@ -46,7 +45,7 @@ export class RecepcionComponent implements OnInit {
 
   inscripcionForm!: FormGroup;
   renovacionForm!: FormGroup;
-  openMatForm!: FormGroup; // NUEVO: Formulario rápido
+  openMatForm!: FormGroup;
   arqueoForm!: FormGroup;
 
   dniTorniquete = '';
@@ -63,14 +62,11 @@ export class RecepcionComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Recuperar usuario logueado
     const session = localStorage.getItem('kombat-session');
     if(session) {
       const parsed = JSON.parse(session);
       this.usuarioActual = parsed.username || 'Recepcionista Central';
     }
-
-    // ACTUALIZADO: Con los nuevos campos de competidor y academia
     this.inscripcionForm = this.fb.group({
       nombre: ['', Validators.required],
       apellidos: ['', Validators.required],
@@ -89,8 +85,6 @@ export class RecepcionComponent implements OnInit {
       nuevo_plan_id: ['', Validators.required],
       metodo_pago: ['', Validators.required]
     });
-
-    // NUEVO: Formulario ultra rápido para Sábados
     this.openMatForm = this.fb.group({
       nombre: ['', Validators.required],
       dni: ['', Validators.required],
@@ -115,7 +109,7 @@ export class RecepcionComponent implements OnInit {
           nombre: `${alumno.nombre} ${alumno.apellidos || ''}`,
           dni: alumno.dni,
           plan: alumno.estado === 'Visitante' ? 'Pase Diario' : `Plan ID: ${alumno.plan_id || 1}`,
-          vencimiento: alumno.academia_origen, // Mostramos la academia en el directorio
+          vencimiento: alumno.academia_origen,
           estado: alumno.estado || 'Activo',
           color: alumno.estado === 'Activo' ? 'green' : (alumno.estado === 'Visitante' ? 'blue' : 'red')
         }));
@@ -144,7 +138,7 @@ export class RecepcionComponent implements OnInit {
             hora: fecha.toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' }),
             nombre: alumnoInfo.nombre,
             plan: alumnoInfo.plan,
-            coach: alumnoInfo.vencimiento, // Reusamos campo para mostrar academia en torniquete
+            coach: alumnoInfo.vencimiento,
             estado: acceso.estado_acceso,
             color: acceso.estado_acceso === 'Permitido' ? 'blue' : 'red'
           };
@@ -169,12 +163,10 @@ export class RecepcionComponent implements OnInit {
     }
   }
 
-  // NUEVO: FLUJO RÁPIDO PARA OPEN MAT (Invitados)
   async guardarOpenMat() {
     if (this.openMatForm.valid) {
       const formVal = this.openMatForm.value;
       try {
-        // 1. Guardar como visitante
         const nuevoVisitante: any = await firstValueFrom(this.http.post('http://127.0.0.1:8000/api/alumnos/', {
           nombre: formVal.nombre,
           apellidos: '(Visita Open Mat)',
@@ -183,8 +175,6 @@ export class RecepcionComponent implements OnInit {
           es_competidor: true,
           estado: 'Visitante'
         }));
-
-        // 2. Registrar el pago del día
         await firstValueFrom(this.http.post('http://127.0.0.1:8000/api/pagos/', {
           alumno: nuevoVisitante.id,
           monto: formVal.pago_dia,
@@ -192,7 +182,6 @@ export class RecepcionComponent implements OnInit {
           metodo_pago: 'efectivo'
         }));
 
-        // 3. Registrar en la Bitácora para auditoría del Admin
         await firstValueFrom(this.http.post('http://127.0.0.1:8000/api/bitacora/', {
           usuario: this.usuarioActual,
           operacion: 'Pase Diario Externo',
@@ -264,21 +253,18 @@ export class RecepcionComponent implements OnInit {
     }
   }
 
-  // ACTUALIZADO: Envía datos a Django y a la Bitácora
   async procesarArqueo() {
     if (this.arqueoForm.valid) {
       const monto = this.arqueoForm.value.montoFisico;
       const obs = this.arqueoForm.value.observaciones || 'Cierre de turno sin novedades';
 
       try {
-        // 1. Guardar Cierre
         await firstValueFrom(this.http.post('http://127.0.0.1:8000/api/cierre-caja/', {
           total_ingresos: monto,
           observaciones: obs,
           estado: 'Auditoría Pendiente'
         }));
 
-        // 2. Alertar al Admin en la Bitácora
         await firstValueFrom(this.http.post('http://127.0.0.1:8000/api/bitacora/', {
           usuario: this.usuarioActual,
           operacion: 'Cierre de Caja',

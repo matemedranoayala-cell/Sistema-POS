@@ -70,14 +70,12 @@ export class CoachComponent implements OnInit {
     if (!total || Number(total) <= 0) { alert("Por favor ingresa una cantidad válida de alumnos."); return; }
 
     try {
-      // 1. Guardar la clase oficial en la base de datos
       await firstValueFrom(this.http.post('http://127.0.0.1:8000/api/registro-clases/', {
         coach: this.usuarioActual,
         clase_impartida: clase,
         total_asistentes: Number(total)
       }));
 
-      // 2. Registrar en la Bitácora del Admin
       await firstValueFrom(this.http.post('http://127.0.0.1:8000/api/bitacora/', {
         usuario: this.usuarioActual,
         operacion: 'Firma de Clase',
@@ -105,7 +103,6 @@ export class CoachComponent implements OnInit {
 
       try {
         await firstValueFrom(this.http.post('http://127.0.0.1:8000/api/reportes-equipo/', payload));
-
         await firstValueFrom(this.http.post('http://127.0.0.1:8000/api/bitacora/', {
           usuario: this.usuarioActual,
           operacion: 'Reporte de Daño',
