@@ -1,20 +1,21 @@
 from django.db import models
 
-# --- MÓDULO RECEPCIÓN ---
 class Alumno(models.Model):
     nombre = models.CharField(max_length=100)
-    # Hacemos que el resto de los campos sean opcionales por ahora para que no choquen con tu Angular
     apellidos = models.CharField(max_length=150, blank=True, null=True)
     dni = models.CharField(max_length=20, blank=True, null=True)
     telefono = models.CharField(max_length=20, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     plan_id = models.IntegerField(blank=True, null=True)
     disciplina_id = models.IntegerField(blank=True, null=True)
+    es_competidor = models.BooleanField(default=False)
+    academia_origen = models.CharField(max_length=150, default='Kombat', help_text="Ej: Kombat, Iron Kick, Team Mizu")
+    asociacion = models.CharField(max_length=150, blank=True, null=True, help_text="Ej: WAKO, JJBDP")
     fecha_inscripcion = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=20, default='Activo')
 
     def __str__(self):
-        return f"{self.nombre} {self.apellidos}"
+        return f"{self.nombre} {self.apellidos} - {self.academia_origen}"
 
 class Pago(models.Model):
     alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE)
@@ -26,7 +27,7 @@ class Pago(models.Model):
 class Asistencia(models.Model):
     alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE)
     fecha_hora = models.DateTimeField(auto_now_add=True)
-    estado_acceso = models.CharField(max_length=20, default='Permitido') # Permitido, Advertencia, Vencido
+    estado_acceso = models.CharField(max_length=20, default='Permitido')
 
 # --- MÓDULO TIENDA / POS ---
 class Producto(models.Model):
@@ -58,3 +59,20 @@ class CierreCaja(models.Model):
     fecha_cierre = models.DateTimeField(auto_now_add=True)
     total_ingresos = models.DecimalField(max_digits=10, decimal_places=2)
     observaciones = models.TextField(blank=True, null=True)
+    estado = models.CharField(max_length=50, default='Auditoría Pendiente')
+
+# --- MÓDULO AUDITORÍA Y REGISTROS ---
+class RegistroClase(models.Model):
+    coach = models.CharField(max_length=150)
+    clase_impartida = models.CharField(max_length=150)
+    total_asistentes = models.IntegerField()
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+
+class Bitacora(models.Model):
+    fecha_hora = models.DateTimeField(auto_now_add=True)
+    usuario = models.CharField(max_length=150)
+    operacion = models.CharField(max_length=150)
+    modulo = models.CharField(max_length=100)
+    detalle = models.TextField(blank=True, null=True)
+    estado = models.CharField(max_length=50, default='Registrado')
+    color = models.CharField(max_length=20, default='blue')

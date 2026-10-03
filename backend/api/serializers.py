@@ -25,3 +25,15 @@ class ReporteEquipoSerializer(serializers.ModelSerializer):
 
 class CierreCajaSerializer(serializers.ModelSerializer):
     class Meta: model = CierreCaja; fields = '__all__'
+from rest_framework import serializers
+from .models import RegistroClase, Bitacora
+
+class RegistroClaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RegistroClase
+        fields = '__all__'
+
+class BitacoraSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bitacora
+        fields = '__all__'

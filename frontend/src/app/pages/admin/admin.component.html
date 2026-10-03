@@ -8,6 +8,7 @@
     </div>
     <div class="header-right">
       <span>{{ usuarioActual }}</span>
+      <button class="btn-arqueo" (click)="abrirModalCoach()" style="background: #3b82f6; margin-right: 10px;">+ Crear Coach</button>
       <button class="btn-arqueo" (click)="abrirModalExportar()">Exportar Reporte Global</button>
     </div>
   </header>
@@ -80,7 +81,7 @@
 </div>
 
 <!-- CAPA DE MODALES DEL ADMIN -->
-<div class="modal-overlay" *ngIf="mostrarModalExportar || mostrarModalLog">
+<div class="modal-overlay" *ngIf="mostrarModalExportar || mostrarModalLog || mostrarModalCoach">
 
   <!-- MODAL EXPORTAR REPORTE -->
   <div class="modal-content" *ngIf="mostrarModalExportar">
@@ -142,6 +143,27 @@
       <button type="button" class="btn-cancelar" (click)="cerrarModales()">Cerrar</button>
       <button *ngIf="logSeleccionado?.color === 'red' || logSeleccionado?.color === 'orange'" type="button" class="btn-guardar" style="background: #10b981;" (click)="autorizarOperacion()">✓ Firmar y Autorizar</button>
     </div>
+  </div>
+
+  <!-- MODAL CREAR COACH -->
+  <div class="modal-content" *ngIf="mostrarModalCoach">
+    <div class="modal-header"><h2>Registrar Nuevo Coach</h2><button class="btn-close" (click)="cerrarModales()">✕</button></div>
+    <form [formGroup]="coachForm" (ngSubmit)="crearCoach()" class="modal-form">
+      <div class="form-grid">
+        <div class="input-group full-width">
+          <label>Correo Electrónico (Será su usuario de ingreso)</label>
+          <input type="email" formControlName="email" placeholder="ejemplo@kombat.com">
+        </div>
+        <div class="input-group full-width">
+          <label>Contraseña Provisional</label>
+          <input type="text" formControlName="password" placeholder="admin123">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancelar" (click)="cerrarModales()">Cancelar</button>
+        <button type="submit" class="btn-guardar" style="background: #3b82f6;">✓ Guardar Coach</button>
+      </div>
+    </form>
   </div>
 
 </div>

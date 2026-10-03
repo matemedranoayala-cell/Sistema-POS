@@ -21,15 +21,17 @@
       <div class="users-section" *ngIf="!showSecretLogin">
         <span class="section-title">SELECCIONAR OPERADOR</span>
         <div class="cards-grid">
+
+          <!-- Operadores Preguardados (Admin/Recepción) -->
           <div
             *ngFor="let user of usuariosPreguardados"
             class="user-card"
-            [class.selected]="usuarioSeleccionado.id === user.id"
+            [class.selected]="!modoCoach && usuarioSeleccionado?.id === user.id"
             (click)="seleccionarUsuario(user)">
 
             <div class="avatar-container">
               <div class="avatar">{{ user.iniciales }}</div>
-              <div class="check-icon" *ngIf="usuarioSeleccionado.id === user.id">✓</div>
+              <div class="check-icon" *ngIf="!modoCoach && usuarioSeleccionado?.id === user.id">✓</div>
             </div>
 
             <div class="user-info">
@@ -37,9 +39,28 @@
               <span class="user-role">{{ user.rol }}</span>
             </div>
           </div>
+
+          <!-- Nuevo Botón Dinámico para Coaches -->
+          <div
+            class="user-card"
+            [class.selected]="modoCoach"
+            (click)="activarLoginCoach()">
+
+            <div class="avatar-container">
+              <div class="avatar" style="background: #3b82f6; color: white;">CH</div>
+              <div class="check-icon" *ngIf="modoCoach">✓</div>
+            </div>
+
+            <div class="user-info">
+              <span class="user-name">¿Eres Coach?</span>
+              <span class="user-role">Ingreso con correo</span>
+            </div>
+          </div>
+
         </div>
       </div>
 
+      <!-- Login Secreto -->
       <div class="secret-login-section" *ngIf="showSecretLogin">
         <div class="secret-header">
           <span class="section-title">ACCESO SUPER ADMIN</span>
@@ -52,6 +73,12 @@
       </div>
 
       <div class="password-section">
+        <!-- Input dinámico que solo aparece si eligen ser Coach -->
+        <div class="input-group" *ngIf="modoCoach && !showSecretLogin" style="margin-bottom: 15px;">
+          <label>CORREO ELECTRÓNICO (COACH)</label>
+          <input type="email" [(ngModel)]="correoCoach" name="correoCoach" placeholder="tucorreo@kombat.com" [required]="modoCoach">
+        </div>
+
         <div class="input-group">
           <label>CONTRASEÑA</label>
           <input type="password" [(ngModel)]="password" name="password" required>

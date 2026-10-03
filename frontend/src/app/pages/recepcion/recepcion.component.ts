@@ -1,10 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+
 import { AlumnoService } from '../../services/alumno.service';
 import { AsistenciaService } from '../../services/asistencia.service';
 import { RenovacionService } from '../../services/renovacion.service';
-import { CierreCajaService } from '../../services/cierre-caja.service';
+
+// Importamos la misma constante de disciplinas que usa el Coach
+export const HORARIOS_KOMBAT = [
+  { disciplina: 'Kickboxing', horarios: ['Lu/Mie/Vie 9:00-10:15', 'Lu/Mie 18:00-19:30', 'Mar/Jue 16:30-18:00', 'Mar/Jue 19:30-21:00'] },
+  { disciplina: 'Brazilian Jiujitsu', horarios: ['Lu/Mie/Vie 7:00-8:30 AM', 'Lu/Mie/Vie 19:30-21:00'] },
+  { disciplina: 'Boxeo', horarios: ['Lu/Mie/Vie 16:30-18:00', 'Mar/Jue 19:30-20:45'] },
+  { disciplina: 'MMA', horarios: ['Lu/Mie/Vie 16:30-18:00', 'Lu/Mie 18:00-19:30 (Competidores)'] },
+  { disciplina: 'Grappling', horarios: ['Mar/Jue 16:30-18:00 (Fundamentals)', 'Mar/Jue 18:00-19:30 (Avanzado)'] },
+  { disciplina: 'Wrestling', horarios: ['Martes 7:30-9:00 AM'] },
+  { disciplina: 'Boxeo Teens', horarios: ['Lu/Mie/Vie 15:30-16:30 (10-16 años)'] },
+  { disciplina: 'Niños/Kids', horarios: ['Lu/Mie/Vie 15:30-16:30 (MMA 4-8)', 'Mar/Jue 18:30-19:30 (BJJ 9-12)', 'Mar/Jue 19:30-20:30 (Kickboxing 9-12)'] }
+];
 
 @Component({
   selector: 'app-recepcion',
@@ -17,12 +31,14 @@ export class RecepcionComponent implements OnInit {
   fechaActual = new Date().toLocaleDateString('es-BO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   usuarioActual = 'Recepcionista Central';
 
+  listaHorarios = HORARIOS_KOMBAT;
   ultimosAccesos: any[] = [];
   registrosDelDia: any[] = [];
   directorio: any[] = [];
 
   mostrarModalInscripcion = false;
   mostrarModalRenovar = false;
+  mostrarModalOpenMat = false; // NUEVO: Para visitas
   mostrarModalRegistros = false;
   mostrarModalDirectorio = false;
   mostrarModalArqueo = false;
@@ -30,35 +46,56 @@ export class RecepcionComponent implements OnInit {
 
   inscripcionForm!: FormGroup;
   renovacionForm!: FormGroup;
+  openMatForm!: FormGroup; // NUEVO: Formulario rápido
   arqueoForm!: FormGroup;
 
   dniTorniquete = '';
   alumnoSeleccionado: any = null;
-  cajaCerrada: boolean = false; // CANDADO DE CAJA
+  cajaCerrada: boolean = false;
+
+  private readonly http = inject(HttpClient);
 
   constructor(
     private fb: FormBuilder,
     private alumnoService: AlumnoService,
     private asistenciaService: AsistenciaService,
-    private renovacionService: RenovacionService,
-    private cierreCajaService: CierreCajaService
+    private renovacionService: RenovacionService
   ) {}
 
   ngOnInit() {
+    // Recuperar usuario logueado
+    const session = localStorage.getItem('kombat-session');
+    if(session) {
+      const parsed = JSON.parse(session);
+      this.usuarioActual = parsed.username || 'Recepcionista Central';
+    }
+
+    // ACTUALIZADO: Con los nuevos campos de competidor y academia
     this.inscripcionForm = this.fb.group({
       nombre: ['', Validators.required],
       apellidos: ['', Validators.required],
       dni: ['', Validators.required],
       telefono: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
+      disciplina_id: ['', Validators.required],
       plan_id: ['', Validators.required],
-      disciplina_id: ['', Validators.required]
+      es_competidor: [false],
+      academia_origen: ['Kombat', Validators.required],
+      asociacion: ['']
     });
 
     this.renovacionForm = this.fb.group({
       dniBusqueda: ['', Validators.required],
       nuevo_plan_id: ['', Validators.required],
       metodo_pago: ['', Validators.required]
+    });
+
+    // NUEVO: Formulario ultra rápido para Sábados
+    this.openMatForm = this.fb.group({
+      nombre: ['', Validators.required],
+      dni: ['', Validators.required],
+      academia_origen: ['', Validators.required],
+      pago_dia: [30, [Validators.required, Validators.min(0)]]
     });
 
     this.arqueoForm = this.fb.group({
@@ -77,19 +114,19 @@ export class RecepcionComponent implements OnInit {
           id: alumno.id,
           nombre: `${alumno.nombre} ${alumno.apellidos || ''}`,
           dni: alumno.dni,
-          plan: `Plan ID: ${alumno.plan_id}`,
-          vencimiento: 'Ver en Pagos',
+          plan: alumno.estado === 'Visitante' ? 'Pase Diario' : `Plan ID: ${alumno.plan_id || 1}`,
+          vencimiento: alumno.academia_origen, // Mostramos la academia en el directorio
           estado: alumno.estado || 'Activo',
-          color: alumno.estado === 'Activo' ? 'green' : 'red'
+          color: alumno.estado === 'Activo' ? 'green' : (alumno.estado === 'Visitante' ? 'blue' : 'red')
         }));
 
         this.registrosDelDia = data.map(alumno => {
           const fecha = new Date(alumno.fecha_inscripcion);
           return {
             hora: fecha.toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' }),
-            tipo: 'Inscripción',
-            detalle: `Nuevo Alumno: ${alumno.nombre}`,
-            monto: 'Bs 300'
+            tipo: alumno.estado === 'Visitante' ? 'Pase Open Mat' : 'Inscripción',
+            detalle: `${alumno.nombre} (${alumno.academia_origen})`,
+            monto: alumno.estado === 'Visitante' ? 'Bs 30' : 'Bs 300'
           };
         }).reverse();
       },
@@ -101,13 +138,13 @@ export class RecepcionComponent implements OnInit {
     this.asistenciaService.obtenerAsistenciasHoy().subscribe({
       next: (data: any[]) => {
         this.ultimosAccesos = data.map(acceso => {
-          const alumnoInfo = this.directorio.find(a => a.id === acceso.alumno) || { nombre: 'Desconocido', plan: '-' };
+          const alumnoInfo = this.directorio.find(a => a.id === acceso.alumno) || { nombre: 'Desconocido', plan: '-', vencimiento: '' };
           const fecha = new Date(acceso.fecha_hora);
           return {
             hora: fecha.toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' }),
             nombre: alumnoInfo.nombre,
             plan: alumnoInfo.plan,
-            coach: 'Central',
+            coach: alumnoInfo.vencimiento, // Reusamos campo para mostrar academia en torniquete
             estado: acceso.estado_acceso,
             color: acceso.estado_acceso === 'Permitido' ? 'blue' : 'red'
           };
@@ -121,6 +158,7 @@ export class RecepcionComponent implements OnInit {
     if (this.inscripcionForm.valid) {
       this.alumnoService.inscribirAlumno(this.inscripcionForm.value).subscribe({
         next: () => {
+          alert('Alumno regular inscrito exitosamente.');
           this.cerrarModales();
           this.cargarDirectorio();
         },
@@ -128,6 +166,50 @@ export class RecepcionComponent implements OnInit {
       });
     } else {
       this.marcarCampos(this.inscripcionForm);
+    }
+  }
+
+  // NUEVO: FLUJO RÁPIDO PARA OPEN MAT (Invitados)
+  async guardarOpenMat() {
+    if (this.openMatForm.valid) {
+      const formVal = this.openMatForm.value;
+      try {
+        // 1. Guardar como visitante
+        const nuevoVisitante: any = await firstValueFrom(this.http.post('http://127.0.0.1:8000/api/alumnos/', {
+          nombre: formVal.nombre,
+          apellidos: '(Visita Open Mat)',
+          dni: formVal.dni,
+          academia_origen: formVal.academia_origen,
+          es_competidor: true,
+          estado: 'Visitante'
+        }));
+
+        // 2. Registrar el pago del día
+        await firstValueFrom(this.http.post('http://127.0.0.1:8000/api/pagos/', {
+          alumno: nuevoVisitante.id,
+          monto: formVal.pago_dia,
+          proximo_vencimiento: new Date().toISOString().split('T')[0],
+          metodo_pago: 'efectivo'
+        }));
+
+        // 3. Registrar en la Bitácora para auditoría del Admin
+        await firstValueFrom(this.http.post('http://127.0.0.1:8000/api/bitacora/', {
+          usuario: this.usuarioActual,
+          operacion: 'Pase Diario Externo',
+          modulo: 'Recepción y Caja',
+          detalle: `Visitante ${formVal.nombre} de academia ${formVal.academia_origen} pagó Bs ${formVal.pago_dia} para Open Mat.`,
+          estado: 'Completado',
+          color: 'green'
+        }));
+
+        alert('Pase diario generado. El alumno ya puede ingresar al tatami.');
+        this.cerrarModales();
+        this.cargarDirectorio();
+      } catch (error) {
+        alert('Error al registrar pase diario.');
+      }
+    } else {
+      this.marcarCampos(this.openMatForm);
     }
   }
 
@@ -150,7 +232,7 @@ export class RecepcionComponent implements OnInit {
         error: (err: any) => console.error('Error al registrar acceso', err)
       });
     } else {
-      alert('DNI no encontrado en la base de datos.');
+      alert(' CI no encontrado en la base de datos.');
     }
   }
 
@@ -182,21 +264,36 @@ export class RecepcionComponent implements OnInit {
     }
   }
 
-  procesarArqueo() {
+  // ACTUALIZADO: Envía datos a Django y a la Bitácora
+  async procesarArqueo() {
     if (this.arqueoForm.valid) {
-      const datosCierre = {
-        total_ingresos: this.arqueoForm.value.montoFisico,
-        observaciones: this.arqueoForm.value.observaciones || 'Cierre de turno sin novedades'
-      };
+      const monto = this.arqueoForm.value.montoFisico;
+      const obs = this.arqueoForm.value.observaciones || 'Cierre de turno sin novedades';
 
-      this.cierreCajaService.registrarCierre(datosCierre).subscribe({
-        next: () => {
-          this.cerrarModales();
-          this.cajaCerrada = true;
-          alert('Caja cerrada y arqueo enviado al Administrador. El sistema se bloqueará para evitar alteraciones.');
-        },
-        error: (err: any) => console.error('Error al registrar cierre de caja', err)
-      });
+      try {
+        // 1. Guardar Cierre
+        await firstValueFrom(this.http.post('http://127.0.0.1:8000/api/cierre-caja/', {
+          total_ingresos: monto,
+          observaciones: obs,
+          estado: 'Auditoría Pendiente'
+        }));
+
+        // 2. Alertar al Admin en la Bitácora
+        await firstValueFrom(this.http.post('http://127.0.0.1:8000/api/bitacora/', {
+          usuario: this.usuarioActual,
+          operacion: 'Cierre de Caja',
+          modulo: 'Recepción y Caja',
+          detalle: `Arqueo declarado físico: Bs ${monto}. Observaciones: ${obs}`,
+          estado: 'Pendiente Revisión',
+          color: 'orange'
+        }));
+
+        this.cerrarModales();
+        this.cajaCerrada = true;
+        alert('Caja cerrada y arqueo enviado al Administrador. El sistema se bloqueará para evitar alteraciones.');
+      } catch (error) {
+        alert('Error conectando con el servidor para cerrar caja.');
+      }
     } else {
       this.marcarCampos(this.arqueoForm);
     }
@@ -205,6 +302,7 @@ export class RecepcionComponent implements OnInit {
   abrirModal(modal: string, data?: any) {
     if (modal === 'inscripcion') this.mostrarModalInscripcion = true;
     if (modal === 'renovar') this.mostrarModalRenovar = true;
+    if (modal === 'openmat') this.mostrarModalOpenMat = true;
     if (modal === 'registros') this.mostrarModalRegistros = true;
     if (modal === 'directorio') this.mostrarModalDirectorio = true;
     if (modal === 'arqueo') this.mostrarModalArqueo = true;
@@ -217,13 +315,15 @@ export class RecepcionComponent implements OnInit {
   cerrarModales() {
     this.mostrarModalInscripcion = false;
     this.mostrarModalRenovar = false;
+    this.mostrarModalOpenMat = false;
     this.mostrarModalRegistros = false;
     this.mostrarModalDirectorio = false;
     this.mostrarModalArqueo = false;
     this.mostrarModalPerfil = false;
     this.alumnoSeleccionado = null;
-    this.inscripcionForm.reset();
+    this.inscripcionForm.reset({ academia_origen: 'Kombat', es_competidor: false });
     this.renovacionForm.reset();
+    this.openMatForm.reset({ pago_dia: 30 });
     this.arqueoForm.reset();
   }
 
