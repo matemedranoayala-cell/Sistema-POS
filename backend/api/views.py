@@ -80,7 +80,6 @@ class LoginView(APIView):
             }, status=status.HTTP_401_UNAUTHORIZED)
 
 
-# <-- LA FUNCIÓN CREAR COACH DEBE IR AFUERA DE LA CLASE -->
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def crear_coach(request):

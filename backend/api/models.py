@@ -7,7 +7,7 @@ class Alumno(models.Model):
     telefono = models.CharField(max_length=20, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     plan_id = models.IntegerField(blank=True, null=True)
-    disciplina_id = models.IntegerField(blank=True, null=True)
+    disciplina_id = models.CharField(max_length=100, blank=True, null=True)
     es_competidor = models.BooleanField(default=False)
     academia_origen = models.CharField(max_length=150, default='Kombat', help_text="Ej: Kombat, Iron Kick, Team Mizu")
     asociacion = models.CharField(max_length=150, blank=True, null=True, help_text="Ej: WAKO, JJBDP")

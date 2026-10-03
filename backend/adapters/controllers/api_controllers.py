@@ -41,13 +41,6 @@ class KombatManagerControllers:
             import traceback
             traceback.print_exc()
             return JsonResponse({"status": "error", "mensaje": "Error interno"}, status=500)
-    def dashboard(self, request):
-        metricas_mock = {
-            "alumnos_activos": 120,
-            "caja_diaria": 850.50,
-            "mensualidades_por_vencer": 5
-        }
-        return JsonResponse({"status": "ok", "data": metricas_mock})
 
     def registrar_asistencia(self, request, asistencia_use_case):
         if request.method == 'POST':
