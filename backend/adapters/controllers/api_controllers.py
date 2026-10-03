@@ -11,8 +11,6 @@ class KombatManagerControllers:
         try:
             data = json.loads(request.body)
             print("1. JSON recibido desde Angular:", data)
-
-            # Intentamos atrapar los datos sin importar cómo los llame Angular
             username = data.get('username', data.get('usuario', data.get('id')))
             password = data.get('password', data.get('pass', data.get('clave')))
 
@@ -22,7 +20,6 @@ class KombatManagerControllers:
             print(f"3. Resultado del Caso de Uso -> Éxito: {exito} | Mensaje: {mensaje}")
 
             if exito:
-                # Extraemos el valor del rol de forma segura
                 rol_str = usuario.rol.value if hasattr(usuario.rol, 'value') else str(usuario.rol)
                 print(f"4. Login Aceptado. Redirigiendo como: {rol_str}")
                 print("="*30 + "\n")

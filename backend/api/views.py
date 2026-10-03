@@ -62,8 +62,6 @@ class LoginView(APIView):
                 user = authenticate(username=user_obj.username, password=contrasena_recibida)
             except User.DoesNotExist:
                 pass
-
-        # 5. RESPUESTA FINAL
         if user is not None:
             return Response({
                 "status": "ok",
@@ -73,7 +71,6 @@ class LoginView(APIView):
                 "usuario": user.username
             }, status=status.HTTP_200_OK)
         else:
-            # Restauré esta parte para que Angular sepa si la contraseña es incorrecta
             return Response({
                 "success": False,
                 "error": "Credenciales incorrectas"
