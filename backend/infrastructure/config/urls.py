@@ -1,30 +1,25 @@
-from django.contrib import admin
-from django.urls import path, include
-from django.views.decorators.csrf import csrf_exempt
-from adapters.controllers.api_controllers import KombatManagerControllers
-from adapters.repositories.django_repositories import (
-    UsuarioRepositoryDjango,
-    ProductoRepositoryDjango,
+from django.urls import path
+from adapters.controllers.api_controllers import LoginController, LogoutController
+from adapters.controllers.personal_controllers import PersonalController
+from adapters.controllers.operaciones_controllers import (
+    AlumnoController, PagoController, AsistenciaController, ProductoController,
+    VentaController, DetalleVentaController, ReporteEquipoController,
+    CierreCajaController, RegistroClaseController, BitacoraController
 )
-from application.use_cases.autenticar_usuario import AutenticarUsuarioUseCase
-from application.use_cases.listar_inventario import ListarInventarioUseCase
-
-usuario_repo = UsuarioRepositoryDjango()
-login_use_case = AutenticarUsuarioUseCase(usuario_repo)
-producto_repo = ProductoRepositoryDjango()
-inventario_use_case = ListarInventarioUseCase(producto_repo)
-api = KombatManagerControllers()
 
 urlpatterns = [
-    #path('admin/', admin.site.urls),
-    #path('api/login/', csrf_exempt(lambda request: api.login(request, auth_use_case=login_use_case))),
-    #path('api/dashboard/', api.dashboard),
-    #path('api/asistencia/', csrf_exempt(lambda request: api.registrar_asistencia(request, asistencia_use_case=None))),
-    #path('api/alumnos/', api.listar_alumnos),
-    #path('api/inventario/', lambda request: api.listar_inventario(request, inventario_use_case=inventario_use_case)),
-    #path('api/inscripciones/', csrf_exempt(api.registrar_inscripcion)),
-    #path('api/renovaciones/', csrf_exempt(api.registrar_renovacion)),
-    #path('api/ventas/', csrf_exempt(api.registrar_venta)),
-    #path('api/caja/cierre/', csrf_exempt(api.registrar_cierre_caja)),
-    path('api/', include('api.urls'))
+    path('api/login/', LoginController.as_view(), name='login'),
+    path('api/logout/', LogoutController.as_view(), name='logout'),
+    path('api/personal/', PersonalController.as_view(), name='gestion_personal'),
+    path('api/personal/<int:pk>/', PersonalController.as_view(), name='detalle_personal'),
+    path('api/alumnos/', AlumnoController.as_view(), name='alumnos'),
+    path('api/pagos/', PagoController.as_view(), name='pagos'),
+    path('api/asistencias/', AsistenciaController.as_view(), name='asistencias'),
+    path('api/productos/', ProductoController.as_view(), name='productos'),
+    path('api/ventas/', VentaController.as_view(), name='ventas'),
+    path('api/detalle-ventas/', DetalleVentaController.as_view(), name='detalle_ventas'),
+    path('api/reportes-equipo/', ReporteEquipoController.as_view(), name='reportes_equipo'),
+    path('api/cierre-caja/', CierreCajaController.as_view(), name='cierre_caja'),
+    path('api/registro-clases/', RegistroClaseController.as_view(), name='registro_clases'),
+    path('api/bitacora/', BitacoraController.as_view(), name='bitacora'),
 ]

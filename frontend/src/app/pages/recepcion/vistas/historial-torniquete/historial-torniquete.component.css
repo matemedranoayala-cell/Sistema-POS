@@ -1,0 +1,50 @@
+.vista-contenedor {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+.cabecera-vista {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+.cabecera-vista h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #111827;
+}
+.boton-volver {
+  background: #f3f4f6;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  color: #374151;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.boton-volver:hover {
+  background: #e5e7eb;
+}
+.tabla-contenedor {
+  overflow-x: auto;
+}
+.tabla-datos {
+  width: 100%;
+  border-collapse: collapse;
+}
+.tabla-datos th {
+  text-align: left;
+  padding: 1rem;
+  border-bottom: 2px solid #e5e7eb;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+.tabla-datos td {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  color: #111827;
+  font-size: 0.95rem;
+}

@@ -1,0 +1,53 @@
+<div class="tarjeta-usuarios" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+
+  <div class="cabecera-usuarios" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+    <div>
+      <h3 style="margin: 0; font-size: 1.05rem; color: #0f172a; font-weight: 700;">Usuarios Activos</h3>
+      <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: #64748b;">Personal del sistema</p>
+    </div>
+
+    <button
+      type="button"
+      (click)="verTodos()"
+      style="background: transparent; border: none; color: #2563eb; font-size: 0.85rem; font-weight: 500; cursor: pointer; padding: 4px 8px; border-radius: 6px;">
+      Ver todos
+    </button>
+  </div>
+  <div class="lista-usuarios" style="display: flex; flex-direction: column; gap: 12px;">
+
+    <div
+      *ngFor="let user of usuarios | slice:0:3"
+      class="item-usuario"
+      style="display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border: 1px solid #f1f5f9; border-radius: 10px; background: #f8fafc;">
+      <div class="info-usuario">
+        <strong style="display: block; color: #0f172a; font-size: 0.95rem; margin-bottom: 4px;">
+          {{ user.username || user.nombre }}
+        </strong>
+        <span style="color: #64748b; font-size: 0.8rem;">
+          {{ user.area || (user.rol === 'COACH' ? 'Área de Tatami' : 'Recepción / Caja') }}
+        </span>
+      </div>
+      <div class="estado-usuario" style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+        <span
+          [ngStyle]="{
+            'background': user.rol === 'RECEPCION' ? '#fef3c7' : (user.rol === 'COACH' ? '#dbeafe' : '#f1f5f9'),
+            'color': user.rol === 'RECEPCION' ? '#b45309' : (user.rol === 'COACH' ? '#1d4ed8' : '#64748b')
+          }"
+          style="font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">
+          {{ user.rol }}
+        </span>
+
+        <span
+          [style.color]="user.activo !== false ? '#2563eb' : '#ef4444'"
+          style="font-size: 0.8rem; font-weight: 500;">
+          {{ user.activo !== false ? 'Activo' : 'Inactivo' }}
+        </span>
+      </div>
+
+    </div>
+    <div *ngIf="usuarios.length === 0" style="text-align: center; padding: 20px; color: #94a3b8; font-size: 0.85rem;">
+      No hay usuarios activos para mostrar.
+    </div>
+
+  </div>
+</div>

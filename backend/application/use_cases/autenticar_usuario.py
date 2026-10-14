@@ -1,17 +1,24 @@
 from application.interfaces.repositories import IUsuarioRepository
-from core.entities.usuario import Usuario
+from typing import Dict, Any
 
 class AutenticarUsuarioUseCase:
-    def __init__(self, usuario_repo: IUsuarioRepository):
-        self.usuario_repo = usuario_repo
+    def __init__(self, repositorio: IUsuarioRepository):
+        self.repositorio = repositorio
 
-    def ejecutar(self, username: str, password_plana: str) -> tuple[bool, str, Usuario | None]:
-        usuario = self.usuario_repo.obtener_por_credenciales(username, password_plana)
+    def ejecutar(self, identificador: str, password: str) -> Dict[str, Any]:
+        if not identificador or not password:
+            return {"success": False, "error": "Faltan credenciales"}
+        usuario = self.repositorio.autenticar(identificador, password)
 
-        if not usuario:
-            return False, "Credenciales incorrectas o el usuario no existe.", None
-
-        if not usuario.activo:
-            return False, "Cuenta desactivada. Comuníquese con la administración.", None
-
-        return True, "Autenticación exitosa.", usuario
+        if usuario:
+            return {
+                "success": True,
+                "status": "ok",
+                "rol": usuario.rol,
+                "usuario": usuario.username
+            }
+        else:
+            return {
+                "success": False,
+                "error": "Credenciales incorrectas"
+            }

@@ -1,0 +1,8 @@
+.contenedor-principal { min-height: 100vh; background-color: #f8fafc; display: flex; flex-direction: column; }
+.contenido-panel { padding: 2rem 3rem; max-width: 1200px; margin: 0 auto; width: 100%; flex: 1; }
+.cabecera-seccion { margin-bottom: 2rem; }
+.cabecera-seccion h2 { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0 0 0.5rem 0; }
+.cabecera-seccion p { font-size: 0.95rem; color: #64748b; margin: 0; }
+.grid-tarjetas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+.deshabilitado { opacity: 0.5; pointer-events: none; cursor: not-allowed; filter: grayscale(1); }
+.contenedor-inferior { width: 100%; }

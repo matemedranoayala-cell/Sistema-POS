@@ -1,0 +1,64 @@
+<div
+  (click)="cerrar.emit()"
+  style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.65); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+
+  <div
+    (click)="$event.stopPropagation()"
+    style="width: 480px; max-width: 95vw; background: #ffffff; border-radius: 14px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+
+    <div style="padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
+      <h2 style="margin: 0; font-size: 1.2rem; color: #0f172a; font-weight: 700;">Registrar Nuevo Personal</h2>
+      <button type="button" (click)="cerrar.emit()" style="background: transparent; border: none; color: #64748b; cursor: pointer; display: flex; align-items: center;">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label style="font-size: 0.85rem; font-weight: 600; color: #334155;">Rol en el Sistema *</label>
+        <select
+          [(ngModel)]="nuevoUsuario.rol"
+          style="padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; color: #0f172a; background: #ffffff;">
+          <option value="COACH">Entrenador (COACH)</option>
+          <option value="RECEPCION">Recepción y Caja (RECEPCION)</option>
+        </select>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label style="font-size: 0.85rem; font-weight: 600; color: #334155;">Usuario o Correo Electrónico *</label>
+        <input
+          type="text"
+          [(ngModel)]="nuevoUsuario.username"
+          placeholder="Ej. coach_boxeo o entrenador@gmail.com"
+          style="padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; color: #0f172a;">
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label style="font-size: 0.85rem; font-weight: 600; color: #334155;">Contraseña de Acceso *</label>
+        <input
+          type="password"
+          [(ngModel)]="nuevoUsuario.password"
+          placeholder="Ingresa la contraseña"
+          style="padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; color: #0f172a;">
+      </div>
+    </div>
+
+    <div style="padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px; background: #f8fafc;">
+      <button
+        type="button"
+        (click)="cerrar.emit()"
+        style="padding: 10px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: 500; cursor: pointer;">
+        Cancelar
+      </button>
+      <button
+        type="button"
+        (click)="registrarUsuario()"
+        style="padding: 10px 20px; border-radius: 8px; border: none; background: #2563eb; color: #ffffff; font-weight: 600; cursor: pointer;">
+        Guardar Personal
+      </button>
+    </div>
+
+  </div>
+</div>

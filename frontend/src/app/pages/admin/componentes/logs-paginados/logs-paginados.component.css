@@ -1,0 +1,18 @@
+.contenedor-logs { background: white; border-radius: 12px; padding: 1.5rem; border: 1px solid #e5e7eb; height: 100%; display: flex; flex-direction: column; }
+.cabecera-logs { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.cabecera-logs h3 { margin: 0; font-size: 1.1rem; color: #111827; }
+.filtros { display: flex; gap: 0.5rem; background: #f3f4f6; padding: 0.25rem; border-radius: 8px; }
+.filtros button { border: none; background: transparent; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.85rem; font-weight: 500; color: #4b5563; cursor: pointer; transition: 0.2s; }
+.filtros button.activo { background: white; color: #111827; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.lista-logs { flex: 1; display: flex; flex-direction: column; }
+.log-item { display: flex; align-items: center; padding: 1rem 0; border-bottom: 1px solid #f3f4f6; gap: 1rem; }
+.log-item:last-child { border-bottom: none; }
+.log-tiempo { width: 100px; display: flex; flex-direction: column; }
+.fecha { font-size: 0.85rem; color: #6b7280; }
+.hora { font-size: 0.85rem; color: #9ca3af; }
+.log-detalle { flex: 1; display: flex; flex-direction: column; border-left: 2px solid #e5e7eb; padding-left: 1rem; }
+.evento { font-weight: 600; color: #111827; font-size: 0.95rem; margin-bottom: 0.2rem; }
+.autor { font-size: 0.85rem; color: #6b7280; }
+.log-modulo { width: 120px; font-size: 0.9rem; color: #374151; font-weight: 500; }
+.btn-revisar { background: white; border: 1px solid #d1d5db; padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.85rem; cursor: pointer; color: #374151; }
+.btn-revisar:hover { background: #f9fafb; }

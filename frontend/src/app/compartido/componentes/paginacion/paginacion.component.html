@@ -1,0 +1,25 @@
+<div class="contenedor-paginacion" *ngIf="totalPaginas > 1">
+  <span class="info-paginacion">
+    Mostrando {{ (paginaActual - 1) * itemsPorPagina + 1 }} a
+    {{ (paginaActual * itemsPorPagina) > totalItems ? totalItems : (paginaActual * itemsPorPagina) }}
+    de {{ totalItems }} registros
+  </span>
+
+  <div class="controles">
+    <button
+      class="boton-paginador"
+      [disabled]="paginaActual === 1"
+      (click)="paginaAnterior()">
+      Anterior
+    </button>
+
+    <span class="indicador-pagina">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+
+    <button
+      class="boton-paginador"
+      [disabled]="paginaActual === totalPaginas"
+      (click)="paginaSiguiente()">
+      Siguiente
+    </button>
+  </div>
+</div>

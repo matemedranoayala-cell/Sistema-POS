@@ -1,0 +1,39 @@
+<div class="contenedor-logs">
+  <div class="cabecera-logs">
+    <h3>Logs y Movimientos del Sistema</h3>
+    <div class="filtros">
+      <button [class.activo]="filtroActivo === 'todos'" (click)="aplicarFiltro('todos')">Todos</button>
+      <button [class.activo]="filtroActivo === 'recepcion'" (click)="aplicarFiltro('recepcion')">Recepción</button>
+      <button [class.activo]="filtroActivo === 'coaches'" (click)="aplicarFiltro('coaches')">Coaches</button>
+    </div>
+  </div>
+
+  <div class="lista-logs">
+    <div class="log-item" *ngFor="let log of logsPaginados">
+      <div class="log-tiempo">
+        <span class="fecha">{{ log.fecha_hora | date:'dd/MM/yyyy' }}</span>
+        <span class="hora">{{ log.fecha_hora | date:'hh:mm a' }}</span>
+      </div>
+      <div class="log-detalle">
+        <span class="evento">{{ log.operacion }}</span>
+        <span class="autor">Resp: {{ log.usuario }}</span>
+      </div>
+      <div class="log-modulo">{{ log.modulo }}</div>
+      <div class="log-accion">
+        <button class="btn-revisar" (click)="revisarDetalle(log)">Revisar</button>
+      </div>
+    </div>
+
+    <div *ngIf="logsPaginados.length === 0" style="padding: 2rem; text-align: center; color: #6b7280; font-size: 0.9rem;">
+      No hay movimientos registrados para este filtro.
+    </div>
+  </div>
+
+  <app-paginacion
+    *ngIf="logsFiltrados.length > 0"
+    [paginaActual]="paginaActual"
+    [totalItems]="logsFiltrados.length"
+    [itemsPorPagina]="itemsPorPagina"
+    (cambioPagina)="actualizarPaginacion($event)">
+  </app-paginacion>
+</div>

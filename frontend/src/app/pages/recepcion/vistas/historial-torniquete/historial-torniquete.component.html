@@ -1,0 +1,65 @@
+<div
+  (click)="volver.emit()"
+  style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.65); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+
+  <div
+    (click)="$event.stopPropagation()"
+    style="width: 920px; max-width: 95vw; background: #ffffff; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+
+    <div style="padding: 20px 28px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
+      <div>
+        <h3 style="margin: 0 0 4px 0; font-size: 1.3rem; color: #0f172a; font-weight: 700;">Historial Completo de Acceso y Torniquete</h3>
+        <p style="margin: 0; font-size: 0.9rem; color: #64748b;">Registro general de ingresos validados en el día.</p>
+      </div>
+      <button
+        type="button"
+        (click)="volver.emit()"
+        style="background: transparent; border: none; color: #64748b; cursor: pointer; padding: 4px; display: flex; align-items: center;">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="22" height="22">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div style="padding: 24px 28px;">
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px;">
+        <div
+          *ngFor="let item of accesosPaginados"
+          style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; background: #ffffff; display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h4 style="margin: 0; font-size: 1rem; color: #0f172a; font-weight: 700;">{{ item.nombre }}</h4>
+            <span style="background: #3b82f6; color: #ffffff; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">
+              {{ item.estado }}
+            </span>
+          </div>
+          <div style="background: #f1f5f9; color: #334155; padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; display: flex; justify-content: space-between; align-items: center;">
+            <span style="display: inline-flex; align-items: center; gap: 6px;">
+              <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {{ item.hora }}
+            </span>
+            <span>Plan ID: {{ item.plan }} ({{ item.academia }})</span>
+          </div>
+        </div>
+      </div>
+
+      <app-paginacion
+        [paginaActual]="paginaActual"
+        [totalItems]="accesos.length"
+        [itemsPorPagina]="itemsPorPagina"
+        (cambioPagina)="actualizarPaginacion($event)">
+      </app-paginacion>
+    </div>
+
+    <div style="padding: 14px 28px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; background: #f8fafc;">
+      <button
+        type="button"
+        (click)="volver.emit()"
+        style="background: #0f172a; color: #ffffff; border: none; padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+        Cerrar
+      </button>
+    </div>
+
+  </div>
+</div>

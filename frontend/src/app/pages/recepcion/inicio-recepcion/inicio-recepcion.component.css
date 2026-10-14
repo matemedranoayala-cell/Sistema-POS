@@ -1,0 +1,49 @@
+.contenedor-principal {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  background-color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+}
+
+.contenido-panel {
+  padding: 1.25rem 3rem;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.cabecera-seccion {
+  margin-bottom: 1.25rem;
+}
+
+.cabecera-seccion h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.25rem 0;
+}
+
+.cabecera-seccion p {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.grid-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .contenido-panel {
+    padding: 1rem;
+  }
+}

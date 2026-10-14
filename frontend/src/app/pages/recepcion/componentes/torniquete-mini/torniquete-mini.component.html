@@ -1,0 +1,65 @@
+<div class="contenedor-torniquete">
+  <h3 class="titulo-torniquete">Control de Acceso y Torniquete</h3>
+
+  <div class="barra-busqueda">
+    <div class="input-con-icono">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icono-buscar">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+      </svg>
+      <input
+        type="text"
+        placeholder="Escanear credencial o buscar por CI o nombre..."
+        [(ngModel)]="busqueda"
+        (keyup.enter)="marcarIngreso()">
+    </div>
+    <button type="button" class="boton-ingreso" (click)="marcarIngreso()">
+      Marcar Ingreso
+    </button>
+  </div>
+
+  <div class="lista-registros">
+    <div class="registro-fila" *ngFor="let reg of registrosFiltrados">
+      <div class="col-hora" style="display: inline-flex; align-items: center; gap: 6px;">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16" style="color: #64748b;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        {{ reg.hora }}
+      </div>
+      <div class="separador-vertical"></div>
+      <div class="col-datos">
+        <span class="nombre-atleta">{{ reg.nombre }}</span>
+        <span class="plan-id">CI: {{ reg.dni || 'S/N' }} | Plan ID: {{ reg.plan }}</span>
+      </div>
+      <div class="col-academia">{{ reg.academia }}</div>
+      <div class="col-estado">
+        <span class="etiqueta-permitido">{{ reg.estado }}</span>
+      </div>
+      <div class="col-accion">
+        <button type="button" class="boton-perfil" (click)="verPerfil(reg)">
+          Ver Perfil
+        </button>
+      </div>
+    </div>
+
+    <div
+      *ngIf="registrosFiltrados.length === 0"
+      style="padding: 20px; text-align: center; color: #64748b; font-size: 0.9rem;">
+      No se encontraron atletas con "{{ busqueda }}".
+    </div>
+  </div>
+
+  <div
+    class="pie-torniquete"
+    style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #f1f5f9; display: flex; justify-content: center;">
+    <button
+      type="button"
+      class="boton-historial"
+      (click)="verHistorialCompleto()"
+      style="display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 10px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer;">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      Ver todo el control de acceso
+    </button>
+  </div>
+</div>

@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
@@ -15,26 +15,41 @@ export class AuthService {
       );
 
       if (response && response.status === 'ok') {
-        const userRol = response.rol || 'SUPERADMIN';
+        const userRol = response.rol || 'admin';
         localStorage.setItem('kombat-session', JSON.stringify({ username, rol: userRol }));
+        localStorage.setItem('username', username);
+        localStorage.setItem('rol', userRol.toUpperCase());
         return { success: true, rol: userRol };
       }
 
       return { success: false };
-
     } catch (error) {
-      if (error instanceof HttpErrorResponse) {
-        console.error('Error de autenticación:', error.error || error.message);
-      } else {
-        console.error('Error inesperado durante el login:', error);
-      }
       return { success: false };
     }
+  }
+
+  obtenerSesion(): { username: string; rol: string } {
+    const raw = localStorage.getItem('kombat-session');
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        return {
+          username: parsed.username || 'admin',
+          rol: (parsed.rol || 'ADMIN').toUpperCase()
+        };
+      } catch {}
+    }
+    return {
+      username: localStorage.getItem('username') || 'admin',
+      rol: (localStorage.getItem('rol') || 'ADMIN').toUpperCase()
+    };
   }
 
   logout(): void {
     localStorage.removeItem('kombat-session');
     localStorage.removeItem('kombat-branch');
     localStorage.removeItem('kombat-keep-session');
+    localStorage.removeItem('username');
+    localStorage.removeItem('rol');
   }
 }

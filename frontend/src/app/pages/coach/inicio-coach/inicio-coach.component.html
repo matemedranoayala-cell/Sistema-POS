@@ -1,0 +1,54 @@
+<div class="contenedor-principal">
+  <app-barra-superior-coach
+    [claseActiva]="claseActiva"
+    (abrirMisHorarios)="mostrarModalMisHorarios = true">
+  </app-barra-superior-coach>
+
+  <div class="contenido-panel">
+    <div class="cabecera-seccion">
+      <h2>Gestión de Tatami</h2>
+      <p>Control de asistencia y reportes de equipamiento</p>
+    </div>
+
+    <div class="grid-tarjetas">
+      <app-tarjeta-accion
+        [titulo]="claseActiva ? 'Finalizar Clase' : 'Iniciar Clase'"
+        [subtitulo]="claseActiva ? 'Cerrar sesión actual' : 'Comenzar entrenamiento'"
+        [colorFondo]="claseActiva ? '#fef2f2' : '#f0fdf4'"
+        [colorTexto]="claseActiva ? '#ef4444' : '#10b981'"
+        (clickTarjeta)="toggleClase()">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18z M15 9l-6 6 M9 9l6 6" *ngIf="claseActiva" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" *ngIf="!claseActiva" />
+        </svg>
+      </app-tarjeta-accion>
+
+      <app-tarjeta-accion
+        titulo="Firma de Clase"
+        subtitulo="Declarar total de alumnos"
+        colorFondo="#eff6ff"
+        colorTexto="#3b82f6"
+        [class.deshabilitado]="!claseActiva"
+        (clickTarjeta)="abrirFirma()">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+      </app-tarjeta-accion>
+
+      <app-tarjeta-accion
+        titulo="Reportar Daño"
+        subtitulo="Avisar sobre equipos rotos"
+        colorFondo="#fef3c7"
+        colorTexto="#f59e0b"
+        (clickTarjeta)="abrirReporte()">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+      </app-tarjeta-accion>
+    </div>
+
+    <div class="contenedor-inferior">
+      <app-horarios-paginados></app-horarios-paginados>
+    </div>
+  </div>
+</div>
+
+<app-modal-mis-horarios *ngIf="mostrarModalMisHorarios" (cerrar)="mostrarModalMisHorarios = false"></app-modal-mis-horarios>
+<app-modal-firma-clase *ngIf="mostrarModalFirma" (firmaCompletada)="claseActiva = false" (cerrar)="mostrarModalFirma = false"></app-modal-firma-clase>
+<app-modal-reporte-dano *ngIf="mostrarModalReporte" (cerrar)="mostrarModalReporte = false"></app-modal-reporte-dano>

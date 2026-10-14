@@ -1,0 +1,72 @@
+<div class="fondo-modal" (click)="cerrar.emit()">
+  <div class="tarjeta-modal" (click)="$event.stopPropagation()" style="max-width: 550px;">
+
+    <div class="cabecera-modal">
+      <h2>Pase Diario / Open Mat</h2>
+      <button type="button" class="boton-cerrar" (click)="cerrar.emit()" style="display: flex; align-items: center; justify-content: center;">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="cuerpo-modal">
+      <p style="background: #eef2ff; color: #4338ca; padding: 12px; border-radius: 6px; font-size: 13px; margin-top: 0;">
+        Pase rápido temporal. Ideal para visitas de sparring.
+      </p>
+
+      <div class="fila-doble">
+        <div class="grupo-select">
+          <label>Nombre del Visitante</label>
+          <input
+            type="text"
+            [(ngModel)]="visitante.nombre"
+            placeholder="Ej. Carlos Mendoza"
+            class="select-base"
+            style="width: 100%; box-sizing: border-box;">
+        </div>
+        <div class="grupo-select">
+          <label>CI</label>
+          <input
+            type="text"
+            [(ngModel)]="visitante.dni"
+            placeholder="Número"
+            class="select-base"
+            style="width: 100%; box-sizing: border-box;">
+        </div>
+      </div>
+
+      <div class="fila-doble" style="margin-top: 1rem;">
+        <div class="grupo-select">
+          <label>Pago (Bs)</label>
+          <input
+            type="number"
+            [(ngModel)]="visitante.pago"
+            class="select-base"
+            style="width: 100%; box-sizing: border-box;">
+        </div>
+        <div class="grupo-select">
+          <label>Academia Invitada</label>
+          <input
+            type="text"
+            [(ngModel)]="visitante.academia"
+            placeholder="Ej. Team Mizu"
+            class="select-base"
+            style="width: 100%; box-sizing: border-box;">
+        </div>
+      </div>
+    </div>
+
+    <div class="pie-modal">
+      <button type="button" class="boton-secundario" (click)="cerrar.emit()">Cancelar</button>
+      <button
+        type="button"
+        class="boton-secundario"
+        style="background-color: #8b5cf6; color: white; border: none;"
+        (click)="generarPase()">
+        Generar Pase
+      </button>
+    </div>
+
+  </div>
+</div>

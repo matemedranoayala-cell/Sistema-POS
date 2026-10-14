@@ -1,104 +1,53 @@
-<div class="login-wrapper">
-  <div class="login-box">
+<div class="fondo-oscuro">
+  <div class="tarjeta-login">
 
-    <div class="clock-pill">
-      <span class="pulse-dot"></span>
-      <span class="time-text">{{ currentTime }}</span>
-    </div>
+    <div class="seccion-formulario">
+      <div class="contenido-formulario">
 
-    <div class="header">
-      <div class="brand">
-        <img src="/kombat_managerpp.jpg" alt="Altitud Logo" class="logo" (click)="triggerSecretAdmin()">
-        <div class="brand-text">
-          <h1>KOMBAT MANAGER</h1>
-          <p>ACCESO OPERATIVO</p>
+        <div class="encabezado-logo">
+          <h1 class="titulo-login">KOMBAT<br>MANAGER</h1>
+          <img src="/kombat_managerpp.jpg" alt="Logo" class="logo-pequeno">
         </div>
-      </div>
-    </div>
 
-    <form (submit)="triggerLogin(); $event.preventDefault()">
+        <p class="subtitulo-login">Hoy es un nuevo día. Inicia sesión para gestionar tu academia.</p>
 
-      <div class="users-section" *ngIf="!showSecretLogin">
-        <span class="section-title">SELECCIONAR OPERADOR</span>
-        <div class="cards-grid">
+        <form>
+          <app-entrada-texto
+            etiqueta="Correo Electrónico o Usuario"
+            marcador="ejemplo@correo.com"
+            [(valor)]="usuario"
+          ></app-entrada-texto>
 
-          <!-- Operadores Preguardados (Admin/Recepción) -->
-          <div
-            *ngFor="let user of usuariosPreguardados"
-            class="user-card"
-            [class.selected]="!modoCoach && usuarioSeleccionado?.id === user.id"
-            (click)="seleccionarUsuario(user)">
+          <app-entrada-texto
+            etiqueta="Contraseña"
+            marcador="Mínimo 8 caracteres"
+            tipo="password"
+            [(valor)]="contrasena"
+          ></app-entrada-texto>
 
-            <div class="avatar-container">
-              <div class="avatar">{{ user.iniciales }}</div>
-              <div class="check-icon" *ngIf="!modoCoach && usuarioSeleccionado?.id === user.id">✓</div>
-            </div>
-
-            <div class="user-info">
-              <span class="user-name">{{ user.nombre }}</span>
-              <span class="user-role">{{ user.rol }}</span>
-            </div>
+          <div class="opciones-extra">
+            <a href="#" class="enlace-olvido">¿Olvidaste tu contraseña?</a>
           </div>
 
-          <!-- Nuevo Botón Dinámico para Coaches -->
-          <div
-            class="user-card"
-            [class.selected]="modoCoach"
-            (click)="activarLoginCoach()">
+          <p class="mensaje-error" *ngIf="mensajeError">{{ mensajeError }}</p>
 
-            <div class="avatar-container">
-              <div class="avatar" style="background: #3b82f6; color: white;">CH</div>
-              <div class="check-icon" *ngIf="modoCoach">✓</div>
-            </div>
+          <app-boton-primario
+            texto="Iniciar Sesión"
+            tipo="button"
+            [deshabilitado]="cargando"
+            (onClick)="iniciarSesion()"
+          ></app-boton-primario>
+        </form>
 
-            <div class="user-info">
-              <span class="user-name">¿Eres Coach?</span>
-              <span class="user-role">Ingreso con correo</span>
-            </div>
-          </div>
-
+        <div class="pie-pagina">
+          <p>© 2026 Kombat Manager. Todos los derechos reservados.</p>
         </div>
       </div>
+    </div>
 
-      <!-- Login Secreto -->
-      <div class="secret-login-section" *ngIf="showSecretLogin">
-        <div class="secret-header">
-          <span class="section-title">ACCESO SUPER ADMIN</span>
-          <span class="cancel-secret" (click)="cancelSecretLogin()">Volver</span>
-        </div>
-        <div class="input-group">
-          <label>USUARIO MAESTRO</label>
-          <input type="text" [(ngModel)]="usernameManual" name="usernameManual" autocomplete="off">
-        </div>
-      </div>
+    <div class="seccion-imagen">
+      <img src="/ALTITUD%202.jpg" alt="Imagen Lateral" class="imagen-decorativa">
+    </div>
 
-      <div class="password-section">
-        <!-- Input dinámico que solo aparece si eligen ser Coach -->
-        <div class="input-group" *ngIf="modoCoach && !showSecretLogin" style="margin-bottom: 15px;">
-          <label>CORREO ELECTRÓNICO (COACH)</label>
-          <input type="email" [(ngModel)]="correoCoach" name="correoCoach" placeholder="tucorreo@kombat.com" [required]="modoCoach">
-        </div>
-
-        <div class="input-group">
-          <label>CONTRASEÑA</label>
-          <input type="password" [(ngModel)]="password" name="password" required>
-        </div>
-
-        <label class="checkbox-container">
-          <input type="checkbox" [(ngModel)]="keepSession" name="keepSession">
-          <span class="checkmark"></span>
-          Mantener sesión iniciada
-        </label>
-      </div>
-
-      <div *ngIf="loginMessage" class="error-message">
-        {{ loginMessage }}
-      </div>
-
-      <button type="submit" class="neon-btn" [disabled]="isLoading">
-        {{ isLoading ? 'VERIFICANDO...' : 'INICIAR TURNO' }}
-      </button>
-
-    </form>
   </div>
 </div>

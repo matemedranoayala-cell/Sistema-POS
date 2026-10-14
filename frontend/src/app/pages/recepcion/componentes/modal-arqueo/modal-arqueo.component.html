@@ -1,0 +1,52 @@
+<div class="fondo-modal" (click)="cerrar.emit()">
+  <div class="tarjeta-modal" (click)="$event.stopPropagation()" style="max-width: 550px;">
+
+    <div class="cabecera-modal">
+      <h2>Arqueo y Cierre de Turno</h2>
+      <button type="button" class="boton-cerrar" (click)="cerrar.emit()" style="display: flex; align-items: center; justify-content: center;">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="cuerpo-modal">
+      <div class="grupo-select" style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 1.5rem;">
+        <p style="margin: 0 0 8px 0; font-size: 14px; color: #4b5563;">Efectivo Calculado por Sistema:</p>
+        <h3 style="margin: 0; font-size: 24px; color: #111827;">Bs {{ efectivoSistema | number:'1.2-2' }}</h3>
+      </div>
+
+      <div class="grupo-select" style="margin-bottom: 1rem;">
+        <label>Efectivo Físico Contado</label>
+        <input
+          type="number"
+          [(ngModel)]="efectivoFisico"
+          placeholder="0.00"
+          class="select-base"
+          style="width: 100%; box-sizing: border-box;">
+      </div>
+
+      <div class="grupo-select">
+        <label>Observaciones (Sobrantes/Faltantes)</label>
+        <input
+          type="text"
+          [(ngModel)]="observaciones"
+          placeholder="Ej. Faltan Bs 10 de cambio..."
+          class="select-base"
+          style="width: 100%; box-sizing: border-box;">
+      </div>
+    </div>
+
+    <div class="pie-modal">
+      <button type="button" class="boton-secundario" (click)="cerrar.emit()">Cancelar</button>
+      <button
+        type="button"
+        class="boton-secundario"
+        style="background-color: #111827; color: white; border: none;"
+        (click)="confirmarCierre()">
+        Confirmar Cierre
+      </button>
+    </div>
+
+  </div>
+</div>

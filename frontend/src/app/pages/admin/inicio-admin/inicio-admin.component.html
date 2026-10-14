@@ -1,0 +1,63 @@
+<div class="contenedor-principal">
+  <app-barra-superior-admin
+    (crearUsuario)="abrirCreacion()"
+    (exportarExcel)="abrirFiltrosExportacion()">
+  </app-barra-superior-admin>
+
+  <div class="contenido-panel">
+    <div class="cabecera-seccion">
+      <h2>Centro de Control Operativo</h2>
+      <p>Supervisión en tiempo real de recepcionistas, tienda y entrenadores</p>
+    </div>
+    <div class="grid-metricas">
+      <app-tarjeta-metrica
+        titulo="Ingresos Consolidados"
+        valor="Bs 4,250"
+        [alerta]="false"
+        (abrir)="abrirGrafico('ingresos')">
+      </app-tarjeta-metrica>
+
+      <app-tarjeta-metrica
+        titulo="Ocupación Global"
+        valor="42 Atletas"
+        [alerta]="false"
+        (abrir)="abrirGrafico('ocupacion')">
+      </app-tarjeta-metrica>
+
+      <app-tarjeta-metrica
+        titulo="Daños por Firmar"
+        valor="3 Pendientes"
+        [alerta]="true"
+        (abrir)="abrirGrafico('danos')">
+      </app-tarjeta-metrica>
+    </div>
+    <div class="grid-contenido">
+      <div class="col-logs">
+        <app-logs-paginados></app-logs-paginados>
+      </div>
+      <div class="col-usuarios">
+        <app-usuarios-activos (abrirGestion)="abrirGestionUsuarios()"></app-usuarios-activos>
+      </div>
+    </div>
+  </div>
+</div>
+<app-modal-crear-usuario
+  *ngIf="mostrarModalUsuario"
+  (cerrar)="mostrarModalUsuario = false">
+</app-modal-crear-usuario>
+
+<app-modal-exportar
+  *ngIf="mostrarModalExportar"
+  (cerrar)="mostrarModalExportar = false">
+</app-modal-exportar>
+
+<app-modal-graficos
+  *ngIf="mostrarModalGraficos"
+  [tipoGrafico]="tipoGraficoActual"
+  (cerrar)="mostrarModalGraficos = false">
+</app-modal-graficos>
+
+<app-modal-gestion-usuarios
+  *ngIf="mostrarModalGestion"
+  (cerrar)="mostrarModalGestion = false">
+</app-modal-gestion-usuarios>

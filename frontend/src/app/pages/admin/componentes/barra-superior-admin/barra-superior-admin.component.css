@@ -1,0 +1,21 @@
+.top-header {
+  background: #ffffff;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e5e7eb;
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.logo-org { width: 32px; height: 32px; border-radius: 6px; object-fit: contain; background-color: #111827; }
+.header-left h2 { margin: 0; font-size: 1.1rem; font-weight: 700; color: #111827; }
+.divider { color: #d1d5db; }
+.date { color: #6b7280; font-size: 0.9rem; }
+.header-right { display: flex; align-items: center; gap: 20px; font-size: 0.9rem; color: #374151; }
+.header-right strong { color: #111827; text-transform: capitalize; }
+.btn-primario { background: #3b82f6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.btn-primario:hover { background: #2563eb; }
+.btn-secundario { background: #4b5563; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.btn-secundario:hover { background: #374151; }
+.btn-logout { background: white; color: #ef4444; border: 1px solid #fca5a5; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500; cursor: pointer; transition: 0.2s; }
+.btn-logout:hover { background: #fef2f2; border-color: #ef4444; }

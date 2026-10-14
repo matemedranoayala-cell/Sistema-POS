@@ -1,0 +1,57 @@
+<div class="fondo-modal" (click)="cerrar.emit()">
+  <div class="tarjeta-modal" (click)="$event.stopPropagation()">
+    <div class="cabecera-modal">
+      <h2>Reportar Daño de Equipo</h2>
+      <button type="button" class="boton-cerrar" (click)="cerrar.emit()" style="display: flex; align-items: center; justify-content: center;">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="cuerpo-modal">
+      <div class="grupo-select" style="margin-bottom: 1rem;">
+        <label>Equipo Afectado</label>
+        <select [(ngModel)]="equipo" class="select-base">
+          <option value="" disabled selected>Seleccione el equipo...</option>
+          <option value="Saco de Boxeo">Saco de Boxeo</option>
+          <option value="Tatami Principal">Tatami Principal</option>
+          <option value="Área de Pesas">Área de Pesas</option>
+          <option value="Octágono">Octágono</option>
+        </select>
+      </div>
+
+      <div class="grupo-select" style="margin-bottom: 1rem;">
+        <label>Nivel de Gravedad</label>
+        <select [(ngModel)]="estado_danio" class="select-base">
+          <option value="Leve">Leve (Uso posible)</option>
+          <option value="Moderado">Moderado (Revisión necesaria)</option>
+          <option value="Crítico">Crítico (No usar)</option>
+        </select>
+      </div>
+
+      <div class="grupo-select">
+        <label>Descripción del Problema</label>
+        <input
+          type="text"
+          [(ngModel)]="descripcion"
+          (keyup.enter)="guardarReporte()"
+          class="select-base"
+          placeholder="Ej. Cadena superior rota">
+      </div>
+    </div>
+
+    <div class="pie-modal">
+      <button type="button" class="boton-secundario" (click)="cerrar.emit()">
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="boton-secundario"
+        style="background-color: #ef4444; color: white; border: none;"
+        (click)="guardarReporte()">
+        Enviar Reporte
+      </button>
+    </div>
+  </div>
+</div>

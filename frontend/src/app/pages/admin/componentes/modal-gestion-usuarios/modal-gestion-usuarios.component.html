@@ -1,0 +1,55 @@
+<div class="fondo-modal-gestion" (click)="cerrar.emit()" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.75); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+
+  <div class="tarjeta-modal" style="width: 850px; max-width: 95vw; background: #ffffff; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);" (click)="$event.stopPropagation()">
+
+    <div class="cabecera-modal" style="padding: 16px 24px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; background: #f9fafb; border-radius: 12px 12px 0 0;">
+      <h2 style="color: #1f2937; margin: 0; font-size: 1.25rem;">Gestión de Personal</h2>
+      <button (click)="cerrar.emit()" style="background: transparent; border: none; color: #6b7280; font-size: 1.25rem; cursor: pointer;">✕</button>
+    </div>
+
+    <div class="cuerpo-modal" style="padding: 24px; display: flex; flex-direction: column; min-height: 400px;">
+      <table style="width: 100%; border-collapse: collapse; text-align: left; color: #374151;">
+        <thead>
+        <tr style="border-bottom: 2px solid #e5e7eb; color: #6b7280; font-size: 0.85rem;">
+          <th style="padding: 12px 8px;">Usuario</th>
+          <th style="padding: 12px 8px;">Rol</th>
+          <th style="padding: 12px 8px;">Estado</th>
+          <th style="padding: 12px 8px; text-align: right;">Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let user of usuariosPaginados" style="border-bottom: 1px solid #f3f4f6;">
+          <td style="padding: 12px 8px; font-weight: 500; color: #1f2937;">
+            {{ user.username }}<br>
+            <small style="color:#6b7280; font-size:0.75rem;">{{ user.area }}</small>
+          </td>
+          <td style="padding: 12px 8px;">
+              <span [ngStyle]="{'color': user.rol === 'ADMIN' ? '#d97706' : (user.rol === 'RECEPCION' ? '#2563eb' : '#059669')}" style="font-size: 0.75rem; font-weight: bold; background: #f3f4f6; padding: 4px 8px; border-radius: 4px; border: 1px solid #e5e7eb;">
+                {{ user.rol }}
+              </span>
+          </td>
+          <td style="padding: 12px 8px;">
+            <span *ngIf="user.activo" style="color: #10b981; font-size: 0.85rem;">● Activo</span>
+            <span *ngIf="!user.activo" style="color: #ef4444; font-size: 0.85rem;">● Inactivo</span>
+          </td>
+          <td style="padding: 12px 8px; text-align: right; display: flex; justify-content: flex-end; gap: 8px;">
+            <button (click)="editar(user)" [style.opacity]="user.rol === 'ADMIN' ? '0.3' : '1'" [disabled]="user.rol === 'ADMIN'" style="background: transparent; color: #2563eb; border: 1px solid #93c5fd; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">Editar</button>
+            <button (click)="inhabilitar(user)" [style.opacity]="user.rol === 'ADMIN' ? '0.3' : '1'" [disabled]="user.rol === 'ADMIN'" [style.background]="user.activo ? '#ef4444' : '#10b981'" style="color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">
+              {{ user.activo ? 'Inhabilitar' : 'Habilitar' }}
+            </button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pie-modal" style="padding: 16px 24px; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; background: #f9fafb; border-radius: 0 0 12px 12px;">
+      <span style="color: #6b7280; font-size: 0.85rem;">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+      <div style="display: flex; gap: 8px;">
+        <button (click)="cambiarPagina(-1)" [disabled]="paginaActual === 1" [style.opacity]="paginaActual === 1 ? '0.5' : '1'" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; background: #ffffff; color: #374151; cursor: pointer;">Anterior</button>
+        <button (click)="cambiarPagina(1)" [disabled]="paginaActual === totalPaginas" [style.opacity]="paginaActual === totalPaginas ? '0.5' : '1'" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; background: #ffffff; color: #374151; cursor: pointer;">Siguiente</button>
+      </div>
+    </div>
+
+  </div>
+</div>

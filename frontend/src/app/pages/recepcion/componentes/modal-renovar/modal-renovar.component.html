@@ -1,0 +1,79 @@
+<div class="fondo-modal" (click)="cerrar.emit()">
+  <div class="tarjeta-modal" (click)="$event.stopPropagation()" style="max-width: 500px;">
+
+    <div class="cabecera-modal">
+      <h2>Renovar Membresía</h2>
+      <button
+        type="button"
+        class="boton-cerrar"
+        (click)="cerrar.emit()"
+        style="display: flex; align-items: center; justify-content: center;">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="cuerpo-modal">
+      <div class="grupo-select" style="margin-bottom: 1rem; position: relative;">
+        <label>Buscar Alumno (CI)</label>
+        <input
+          type="text"
+          [(ngModel)]="datosRenovacion.dni"
+          (ngModelChange)="alEscribirCI()"
+          placeholder="Ej. 55651723"
+          class="select-base"
+          style="width: 100%; box-sizing: border-box;">
+
+        <div
+          *ngIf="alumnoSeleccionado"
+          style="margin-top: 6px; padding: 8px 12px; background: #dcfce7; color: #166534; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">
+          CI: {{ alumnoSeleccionado.dni }} - {{ alumnoSeleccionado.nombre }} {{ alumnoSeleccionado.apellidos }}
+        </div>
+
+        <div
+          *ngIf="!alumnoSeleccionado && sugerenciasPorCI.length > 0"
+          style="margin-top: 6px; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; background: #ffffff;">
+          <div
+            *ngFor="let sug of sugerenciasPorCI"
+            (click)="seleccionarAlumno(sug)"
+            style="padding: 8px 12px; font-size: 0.85rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between;">
+            <strong>CI: {{ sug.dni }}</strong>
+            <span style="color: #64748b;">{{ sug.nombre }} {{ sug.apellidos }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="fila-doble">
+        <div class="grupo-select">
+          <label>Nuevo Plan</label>
+          <select [(ngModel)]="datosRenovacion.plan" class="select-base">
+            <option value="1">Plan Básico (Bs 250)</option>
+            <option value="2">Mes Ilimitado (Bs 350)</option>
+          </select>
+        </div>
+        <div class="grupo-select">
+          <label>Método de Pago</label>
+          <select [(ngModel)]="datosRenovacion.metodoPago" class="select-base">
+            <option value="Efectivo">Efectivo</option>
+            <option value="QR / Transferencia">QR / Transferencia</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="pie-modal">
+      <button type="button" class="boton-secundario" (click)="cerrar.emit()">
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="boton-secundario"
+        style="background-color: #111827; color: white; border: none;"
+        (click)="procesarRenovacion()">
+        Procesar Pago
+      </button>
+    </div>
+
+  </div>
+</div>

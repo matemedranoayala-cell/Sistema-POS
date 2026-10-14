@@ -1,0 +1,13 @@
+<header class="top-header">
+  <div class="header-left">
+    <img src="/kombat_managerpp.jpg" alt="Logo Kombat" class="logo-org">
+    <h2>Kombat Manager</h2>
+    <span class="divider">|</span>
+    <span class="date">{{ fechaActual }}</span>
+  </div>
+  <div class="header-right">
+    <span>Operador: <strong>{{ usuarioActual }}</strong></span>
+    <button class="btn-arqueo" (click)="abrirArqueo()">Arqueo y Cierre</button>
+    <button class="btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
+  </div>
+</header>

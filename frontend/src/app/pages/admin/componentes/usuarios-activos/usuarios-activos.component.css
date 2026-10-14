@@ -1,0 +1,20 @@
+.panel-lateral {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+}
+.cabecera-panel h3 { margin: 0 0 0.25rem 0; font-size: 1.1rem; color: #111827; }
+.cabecera-panel p { margin: 0 0 1.5rem 0; font-size: 0.85rem; color: #6b7280; }
+.lista-usuarios { display: flex; flex-direction: column; gap: 1rem; }
+.tarjeta-usuario { border: 1px solid #f3f4f6; border-radius: 8px; padding: 1rem; background: #fafafa; }
+.info-principal { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+.nombre { margin: 0; font-size: 0.95rem; color: #111827; font-weight: 600; }
+.etiqueta-rol { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+.etiqueta-rol.coach { background: #eff6ff; color: #2563eb; }
+.etiqueta-rol.recepcion { background: #fef3c7; color: #d97706; }
+.info-secundaria { display: flex; justify-content: space-between; font-size: 0.85rem; color: #6b7280; }
+.estado { font-weight: 500; }
+.en-clase { color: #2563eb; }
+.en-caja { color: #10b981; }
+.vacio { text-align: center; color: #9ca3af; padding: 2rem 0; font-size: 0.9rem; }

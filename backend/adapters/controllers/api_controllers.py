@@ -1,121 +1,84 @@
-import json
-from django.http import JsonResponse
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import AllowAny
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import check_password
+from infrastructure.django_apps.core_db.models import Usuario, Bitacora
 
-class KombatManagerControllers:
-    def login(self, request, auth_use_case):
-        print("\n" + "="*30)
-        print("--- NUEVO INTENTO DE LOGIN ---")
-        if request.method != 'POST':
-            return JsonResponse({"error": "Método no permitido"}, status=405)
+class LoginController(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
 
-        try:
-            data = json.loads(request.body)
-            print("1. JSON recibido desde Angular:", data)
-            username = data.get('username', data.get('usuario', data.get('id')))
-            password = data.get('password', data.get('pass', data.get('clave')))
+    def post(self, request):
+        username = request.data.get('username', '').strip()
+        password = request.data.get('password', '').strip()
 
-            print(f"2. Variables extraídas -> User: '{username}' | Pass: '{password}'")
-
-            exito, mensaje, usuario = auth_use_case.ejecutar(username, password)
-            print(f"3. Resultado del Caso de Uso -> Éxito: {exito} | Mensaje: {mensaje}")
-
-            if exito:
-                rol_str = usuario.rol.value if hasattr(usuario.rol, 'value') else str(usuario.rol)
-                print(f"4. Login Aceptado. Redirigiendo como: {rol_str}")
-                print("="*30 + "\n")
-                return JsonResponse({
-                    "status": "ok",
-                    "mensaje": mensaje,
-                    "rol": rol_str
-                })
-            else:
-                print("4. Login Rechazado por credenciales o inactividad.")
-                print("="*30 + "\n")
-                return JsonResponse({"status": "error", "mensaje": mensaje}, status=401)
-
-        except Exception as e:
-            print(f"ERROR CRÍTICO EN LOGIN: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            return JsonResponse({"status": "error", "mensaje": "Error interno"}, status=500)
-
-    def registrar_asistencia(self, request, asistencia_use_case):
-        if request.method == 'POST':
-            data = json.loads(request.body)
-            ci_cliente = data.get('ci_cliente')
-            fecha_actual = data.get('fecha_actual')
-
-            puede_entrar, mensaje = asistencia_use_case.ejecutar(ci_cliente, fecha_actual)
-
-            if puede_entrar:
-                return JsonResponse({"status": "ok", "mensaje": mensaje})
-            return JsonResponse({"status": "rechazado", "mensaje": mensaje}, status=403)
-
-    def listar_alumnos(self, request):
-        return JsonResponse({"status": "ok", "data": []})
-
-    def listar_inventario(self, request, inventario_use_case):
-        if request.method != 'GET':
-            return JsonResponse({"error": "Método no permitido"}, status=405)
+        rol_detectado = None
+        usuario_valido = False
 
         try:
-            productos = inventario_use_case.ejecutar()
-            return JsonResponse({"status": "ok", "data": productos})
-        except Exception as e:
-            return JsonResponse({"status": "error", "mensaje": str(e)}, status=500)
+            u_custom = Usuario.objects.filter(username=username).first()
+            if u_custom:
+                if not u_custom.activo:
+                    return Response({"status": "error", "message": "Usuario inhabilitado"}, status=status.HTTP_403_FORBIDDEN)
+                if u_custom.password_hash == password or check_password(password, u_custom.password_hash):
+                    usuario_valido = True
+                    rol_detectado = str(u_custom.rol or 'RECEPCION').upper()
+        except Exception:
+            pass
 
-    def registrar_inscripcion(self, request):
-        if request.method != 'POST':
-            return JsonResponse({"status": "error", "mensaje": "Método no permitido"}, status=405)
-        try:
-            data = json.loads(request.body)
-            action = data.get('action', 'inscribir_demo')
-            return JsonResponse({
+        if not usuario_valido:
+            user_dj = authenticate(username=username, password=password)
+            if not user_dj:
+                u_obj = User.objects.filter(username=username).first() or User.objects.filter(email=username).first()
+                if u_obj and u_obj.check_password(password):
+                    if not u_obj.is_active:
+                        return Response({"status": "error", "message": "Usuario inhabilitado"}, status=status.HTTP_403_FORBIDDEN)
+                    user_dj = u_obj
+
+            if user_dj:
+                usuario_valido = True
+                if user_dj.is_superuser:
+                    rol_detectado = 'SUPERADMIN'
+                elif user_dj.is_staff and not user_dj.first_name:
+                    rol_detectado = 'ADMIN'
+                elif user_dj.first_name:
+                    rol_detectado = user_dj.first_name.upper()
+                else:
+                    rol_detectado = 'COACH' if '@' in username or 'coach' in username.lower() else 'RECEPCION'
+
+        if usuario_valido:
+            Bitacora.objects.create(
+                usuario=username,
+                operacion=f"LOGIN ({rol_detectado})",
+                modulo="Autenticación",
+                detalle=f"Inicio de sesión exitoso con rol {rol_detectado}",
+                estado="Activo",
+                color="green"
+            )
+            return Response({
                 "status": "ok",
-                "mensaje": "Inscripción registrada con éxito en el sistema (Simulación)",
-                "action_recibido": action
-            })
-        except Exception as e:
-            return JsonResponse({"status": "error", "mensaje": str(e)}, status=400)
+                "username": username,
+                "rol": rol_detectado.lower()
+            }, status=status.HTTP_200_OK)
 
-    def registrar_renovacion(self, request):
-        if request.method != 'POST':
-            return JsonResponse({"status": "error", "mensaje": "Método no permitido"}, status=405)
-        try:
-            data = json.loads(request.body)
-            action = data.get('action', 'renovar_demo')
-            return JsonResponse({
-                "status": "ok",
-                "mensaje": "Renovación registrada con éxito (Simulación)",
-                "action_recibido": action
-            })
-        except Exception as e:
-            return JsonResponse({"status": "error", "mensaje": str(e)}, status=400)
+        return Response({"status": "error", "message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
 
-    def registrar_venta(self, request):
-        if request.method != 'POST':
-            return JsonResponse({"status": "error", "mensaje": "Método no permitido"}, status=405)
-        try:
-            data = json.loads(request.body)
-            action = data.get('action', 'venta_demo')
-            return JsonResponse({
-                "status": "ok",
-                "mensaje": "Venta registrada con éxito (Simulación)",
-                "action_recibido": action
-            })
-        except Exception as e:
-            return JsonResponse({"status": "error", "mensaje": str(e)}, status=400)
+class LogoutController(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
 
-    def registrar_cierre_caja(self, request):
-        if request.method != 'POST':
-            return JsonResponse({"status": "error", "mensaje": "Método no permitido"}, status=405)
-        try:
-            data = json.loads(request.body)
-            action = data.get('action', 'cierre_demo')
-            return JsonResponse({
-                "status": "ok",
-                "mensaje": "Cierre de caja registrado con éxito (Simulación)",
-                "action_recibido": action
-            })
-        except Exception as e:
-            return JsonResponse({"status": "error", "mensaje": str(e)}, status=400)
+    def post(self, request):
+        username = request.data.get('username', 'operador')
+        rol = str(request.data.get('rol', 'ADMIN')).upper()
+        Bitacora.objects.create(
+            usuario=username,
+            operacion=f"LOGOUT ({rol})",
+            modulo="Autenticación",
+            detalle="Cierre de sesión de operador",
+            estado="Finalizado",
+            color="gray"
+        )
+        return Response({"status": "ok"}, status=status.HTTP_200_OK)

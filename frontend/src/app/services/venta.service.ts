@@ -1,14 +1,24 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class VentaService {
-  private apiUrl = 'http://localhost:8000/api/ventas/';
+  private http = inject(HttpClient);
+  private auth = inject(AuthService);
+  private apiUrl = 'http://127.0.0.1:8000/api/ventas/';
 
-  constructor(private http: HttpClient) {}
+  obtenerVentas(): Observable<any[]> {
+    return this.http.get<any[]>(this.apiUrl);
+  }
 
-  registrarVenta(datos: any): Observable<any> {
-    return this.http.post(this.apiUrl, datos);
+  registrarVenta(datos: { total: number; metodo_pago: string; concepto?: string }): Observable<any> {
+    const sesion = this.auth.obtenerSesion();
+    return this.http.post(this.apiUrl, {
+      ...datos,
+      usuario: sesion.username,
+      rol: sesion.rol
+    });
   }
 }

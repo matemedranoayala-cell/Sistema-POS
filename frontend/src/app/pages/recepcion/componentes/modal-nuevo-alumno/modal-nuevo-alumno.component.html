@@ -1,0 +1,92 @@
+<div class="fondo-modal" (click)="cerrarModal()">
+  <div class="tarjeta-modal" (click)="$event.stopPropagation()">
+
+    <div class="cabecera-modal">
+      <h2>Registro de Nuevo Alumno</h2>
+      <button type="button" class="boton-cerrar" (click)="cerrarModal()" style="display: flex; align-items: center; justify-content: center;">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="cuerpo-modal">
+      <div class="fila-doble">
+        <div class="grupo-select">
+          <label>Nombres</label>
+          <input type="text" [(ngModel)]="alumno.nombres" placeholder="Ej: Juan" class="select-base" style="width: 100%; box-sizing: border-box;">
+        </div>
+        <div class="grupo-select">
+          <label>Apellidos</label>
+          <input type="text" [(ngModel)]="alumno.apellidos" placeholder="Ej: Perez" class="select-base" style="width: 100%; box-sizing: border-box;">
+        </div>
+      </div>
+
+      <div class="fila-doble" style="margin-top: 1rem;">
+        <div class="grupo-select">
+          <label>CI</label>
+          <input type="text" [(ngModel)]="alumno.dni" placeholder="Numero de carnet" class="select-base" style="width: 100%; box-sizing: border-box;">
+        </div>
+        <div class="grupo-select">
+          <label>Telefono</label>
+          <input type="text" [(ngModel)]="alumno.telefono" placeholder="Celular" class="select-base" style="width: 100%; box-sizing: border-box;">
+        </div>
+      </div>
+
+      <div class="grupo-select" style="margin-top: 1rem;">
+        <label>Correo Electronico</label>
+        <input type="email" [(ngModel)]="alumno.email" placeholder="ejemplo@correo.com" class="select-base" style="width: 100%; box-sizing: border-box;">
+      </div>
+
+      <div class="seccion-deportiva" style="margin-top: 1.25rem;">
+        <h3 class="titulo-seccion">Perfil Deportivo</h3>
+
+        <label class="interruptor-competidor">
+          <input type="checkbox" [(ngModel)]="alumno.esCompetidor">
+          <span class="texto-interruptor">¿Es Atleta Competidor?</span>
+        </label>
+
+        <div class="carrusel-competidor" [class.abierto]="alumno.esCompetidor" *ngIf="alumno.esCompetidor">
+          <div class="fila-doble" style="margin-top: 0.75rem;">
+            <div class="grupo-select">
+              <label>Academia de Origen</label>
+              <input type="text" [(ngModel)]="alumno.academiaOrigen" placeholder="Ej: Kombat (Local)" class="select-base" style="width: 100%; box-sizing: border-box;">
+            </div>
+            <div class="grupo-select">
+              <label>Asociacion (Opcional)</label>
+              <input type="text" [(ngModel)]="alumno.asociacion" placeholder="Ej: WAKO, JJBDP" class="select-base" style="width: 100%; box-sizing: border-box;">
+            </div>
+          </div>
+        </div>
+
+        <div class="fila-doble" style="margin-top: 1rem;">
+          <div class="grupo-select">
+            <label>Disciplina Base</label>
+            <select [(ngModel)]="alumno.disciplina" class="select-base">
+              <option value="" disabled selected>Seleccionar...</option>
+              <option value="MMA">MMA</option>
+              <option value="Kickboxing">Kickboxing</option>
+              <option value="Jiu Jitsu">Brazilian Jiu Jitsu</option>
+              <option value="Boxeo">Boxeo</option>
+            </select>
+          </div>
+          <div class="grupo-select">
+            <label>Plan Elegido</label>
+            <select [(ngModel)]="alumno.plan" class="select-base">
+              <option value="" disabled selected>Seleccionar...</option>
+              <option value="1">Plan Basico (Bs 250)</option>
+              <option value="2">Plan Ilimitado (Bs 350)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="pie-modal">
+      <button type="button" class="boton-secundario" (click)="cerrarModal()">Cancelar</button>
+      <button type="button" class="boton-secundario" style="background-color: #ef4444; color: white; border: none;" (click)="registrarAlumno()">Inscribir Alumno</button>
+    </div>
+
+  </div>
+</div>

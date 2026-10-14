@@ -1,0 +1,7 @@
+<div class="tarjeta-accion" [class.activa]="activa" (click)="clickTarjeta.emit()">
+  <div class="contenedor-icono" [ngStyle]="{'background-color': colorFondo, 'color': colorTexto}">
+    <ng-content></ng-content>
+  </div>
+  <h3 class="titulo">{{ titulo }}</h3>
+  <p class="subtitulo">{{ subtitulo }}</p>
+</div>

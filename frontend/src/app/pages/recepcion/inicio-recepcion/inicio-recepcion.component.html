@@ -1,0 +1,111 @@
+<div class="contenedor-principal">
+  <app-barra-superior (clickArqueo)="mostrarModalArqueo = true"></app-barra-superior>
+
+  <div class="contenido-panel">
+    <div class="cabecera-seccion">
+      <h2>Recepción y Ventas</h2>
+      <p>Panel de control operativo y accesos del día</p>
+    </div>
+
+    <div class="grid-tarjetas">
+      <app-tarjeta-accion
+        titulo="Nuevo Alumno"
+        subtitulo="Inscripción de membresía"
+        colorFondo="#fee2e2"
+        colorTexto="#ef4444"
+        [activa]="tarjetaActiva === 'nuevo-alumno'"
+        (clickTarjeta)="seleccionarTarjeta('nuevo-alumno')">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
+        </svg>
+      </app-tarjeta-accion>
+
+      <app-tarjeta-accion
+        titulo="Renovar Plan"
+        subtitulo="Reactivación mensual"
+        colorFondo="#f3f4f6"
+        colorTexto="#6b7280"
+        [activa]="tarjetaActiva === 'renovar'"
+        (clickTarjeta)="seleccionarTarjeta('renovar')">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+        </svg>
+      </app-tarjeta-accion>
+
+      <app-tarjeta-accion
+        titulo="Pase Diario / Open Mat"
+        subtitulo="Ingreso rápido para visitantes"
+        colorFondo="#ede9fe"
+        colorTexto="#8b5cf6"
+        [activa]="tarjetaActiva === 'pase-diario'"
+        (clickTarjeta)="seleccionarTarjeta('pase-diario')">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+        </svg>
+      </app-tarjeta-accion>
+
+      <app-tarjeta-accion
+        titulo="Caja y Ventas"
+        subtitulo="Transacciones de hoy"
+        colorFondo="#d1fae5"
+        colorTexto="#10b981"
+        [activa]="vistaActual === 'caja'"
+        (clickTarjeta)="seleccionarTarjeta('caja')">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0-1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+        </svg>
+      </app-tarjeta-accion>
+
+      <app-tarjeta-accion
+        titulo="Directorio Total"
+        subtitulo="Base de datos de atletas"
+        colorFondo="#fef3c7"
+        colorTexto="#f59e0b"
+        [activa]="vistaActual === 'directorio'"
+        (clickTarjeta)="seleccionarTarjeta('directorio')">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+        </svg>
+      </app-tarjeta-accion>
+    </div>
+
+    <app-torniquete-mini (verTodos)="vistaActual = 'historial'"></app-torniquete-mini>
+  </div>
+</div>
+
+<app-directorio-paginado
+  *ngIf="vistaActual === 'directorio'"
+  (volver)="volverAlDashboard()">
+</app-directorio-paginado>
+
+<app-caja-paginada
+  *ngIf="vistaActual === 'caja'"
+  (volver)="volverAlDashboard()">
+</app-caja-paginada>
+
+<app-historial-torniquete
+  *ngIf="vistaActual === 'historial'"
+  (volver)="volverAlDashboard()">
+</app-historial-torniquete>
+
+<app-modal-nuevo-alumno
+  *ngIf="mostrarModalAlumno"
+  (cerrar)="mostrarModalAlumno = false; refrescarTorniquete()"
+  (guardar)="mostrarModalAlumno = false; refrescarTorniquete()">
+</app-modal-nuevo-alumno>
+
+<app-modal-renovar
+  *ngIf="mostrarModalRenovar"
+  (cerrar)="mostrarModalRenovar = false; refrescarTorniquete()"
+  (renovado)="refrescarTorniquete()">
+</app-modal-renovar>
+
+<app-modal-open-mat
+  *ngIf="mostrarModalOpenMat"
+  (cerrar)="mostrarModalOpenMat = false; refrescarTorniquete()">
+</app-modal-open-mat>
+
+<app-modal-arqueo
+  *ngIf="mostrarModalArqueo"
+  (cerrar)="mostrarModalArqueo = false">
+</app-modal-arqueo>

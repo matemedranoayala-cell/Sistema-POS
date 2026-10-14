@@ -1,0 +1,168 @@
+.contenedor-torniquete {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f3f4f6;
+}
+
+.titulo-torniquete {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 1.5rem 0;
+}
+
+.barra-busqueda {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.input-con-icono {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.icono-buscar {
+  position: absolute;
+  left: 1rem;
+  width: 20px;
+  height: 20px;
+  color: #9ca3af;
+}
+
+.input-con-icono input {
+  width: 100%;
+  padding: 0.875rem 1rem 0.875rem 3rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input-con-icono input:focus {
+  border-color: #111827;
+}
+
+.boton-ingreso {
+  background-color: #111827;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.boton-ingreso:hover {
+  background-color: #1f2937;
+}
+
+.lista-registros {
+  display: flex;
+  flex-direction: column;
+}
+
+.registro-fila {
+  display: flex;
+  align-items: center;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid #f3f4f6;
+  gap: 1.5rem;
+}
+
+.registro-fila:last-child {
+  border-bottom: none;
+}
+
+.col-hora {
+  font-size: 0.95rem;
+  color: #4b5563;
+  width: 90px;
+}
+
+.separador-vertical {
+  width: 3px;
+  height: 35px;
+  background-color: #3b82f6;
+  border-radius: 2px;
+}
+
+.col-datos {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.nombre-atleta {
+  font-weight: 700;
+  color: #111827;
+  font-size: 0.95rem;
+}
+
+.plan-id {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.col-academia {
+  font-size: 0.95rem;
+  color: #4b5563;
+  width: 150px;
+}
+
+.col-estado {
+  width: 100px;
+}
+
+.etiqueta-permitido {
+  background-color: #3b82f6;
+  color: white;
+  padding: 0.35rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.boton-perfil {
+  background-color: transparent;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  color: #374151;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.boton-perfil:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.pie-torniquete {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.boton-historial {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+}
+
+.boton-historial:hover {
+  background-color: #eff6ff;
+}

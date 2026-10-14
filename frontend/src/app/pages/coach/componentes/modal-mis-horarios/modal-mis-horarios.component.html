@@ -1,0 +1,38 @@
+<div class="fondo-modal" (click)="cerrar.emit()" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.65); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+  <div class="tarjeta-modal" (click)="$event.stopPropagation()" style="width: 680px; max-width: 95vw; background: #ffffff; border-radius: 12px; overflow: hidden;">
+
+    <div class="cabecera-modal" style="padding: 18px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h2 style="margin: 0; font-size: 1.2rem; color: #0f172a;">Mis Horarios</h2>
+        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">Haz clic en los horarios que impartes</p>
+      </div>
+      <button *ngIf="seleccionados.length > 0" type="button" (click)="cerrar.emit()" style="background: transparent; border: none; color: #64748b; cursor: pointer; display: flex; align-items: center;">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="cuerpo-modal" style="padding: 20px 24px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; max-height: 55vh; overflow-y: auto;">
+      <div
+        *ngFor="let h of todosLosHorarios"
+        (click)="alternar(h)"
+        [ngStyle]="{
+          'border-color': estaActivo(h) ? '#2563eb' : '#e2e8f0',
+          'background': estaActivo(h) ? '#eff6ff' : '#ffffff'
+        }"
+        style="padding: 10px 14px; border: 2px solid; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.85rem; font-weight: 600; color: #0f172a;">{{ h }}</span>
+        <svg *ngIf="estaActivo(h)" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="#2563eb" width="18" height="18">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="pie-modal" style="padding: 14px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc;">
+      <button type="button" (click)="usarSoloHoy()" style="padding: 8px 16px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; cursor: pointer;">Usar Solo Hoy</button>
+      <button type="button" (click)="guardarPermanente()" style="padding: 8px 16px; border-radius: 8px; border: none; background: #2563eb; color: #ffffff; font-weight: 600; cursor: pointer;">Guardar Permanentemente</button>
+    </div>
+
+  </div>
+</div>
