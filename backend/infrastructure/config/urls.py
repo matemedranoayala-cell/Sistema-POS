@@ -1,6 +1,7 @@
 from django.urls import path
 from adapters.controllers.api_controllers import LoginController, LogoutController
 from adapters.controllers.personal_controllers import PersonalController
+from adapters.controllers.caja_controllers import ProductosBajoStockController
 from adapters.controllers.operaciones_controllers import (
     AlumnoController, PagoController, AsistenciaController, ProductoController,
     VentaController, DetalleVentaController, ReporteEquipoController,
@@ -9,6 +10,11 @@ from adapters.controllers.operaciones_controllers import (
 
 urlpatterns = [
     path('api/login/', LoginController.as_view(), name='login'),
+    path(
+        "api/productos/stock-bajo/",
+        ProductosBajoStockController.as_view(),
+        name="productos-bajo-stock",
+    ),
     path('api/logout/', LogoutController.as_view(), name='logout'),
     path('api/personal/', PersonalController.as_view(), name='gestion_personal'),
     path('api/personal/<int:pk>/', PersonalController.as_view(), name='detalle_personal'),
