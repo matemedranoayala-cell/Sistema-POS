@@ -1,12 +1,16 @@
-from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from adapters.controllers.base_controller import BaseCleanController
+from application.use_cases.productos_bajo_stock import obtener_productos_bajo_stock
 from infrastructure.django_apps.core_db.models import (
+    Bitacora,
+    CierreCaja,
+    DetalleVenta,
     Producto,
     Venta,
-    DetalleVenta,
-    CierreCaja,
-    Bitacora,
 )
 
 
@@ -46,3 +50,24 @@ class CierreCajaController(BaseCleanController):
         )
 
         return Response(self.serializar(nuevo), status=status.HTTP_201_CREATED)
+
+
+class ProductosBajoStockController(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+        limite = request.query_params.get("limite", "5")
+
+        try:
+            limite = int(limite)
+            if limite < 0:
+                raise ValueError
+        except ValueError:
+            return Response(
+                {"error": "El límite debe ser un número igual o mayor que cero."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        productos = obtener_productos_bajo_stock(limite)
+        return Response(productos, status=status.HTTP_200_OK)
