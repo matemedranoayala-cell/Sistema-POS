@@ -30,6 +30,12 @@ export class StockBajoComponent implements OnInit {
   error = false;
 
   ngOnInit(): void {
+    this.cargar();
+  }
+
+  cargar(): void {
+    this.cargando = true;
+    this.error = false;
     this.servicio.obtener().subscribe({
       next: productos => {
         this.productos = productos;

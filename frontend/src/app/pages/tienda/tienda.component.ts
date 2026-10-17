@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { VentaRapidaComponent } from '../../compartido/componentes/venta-rapida/venta-rapida.component';
 
 @Component({
   selector: 'app-tienda',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, VentaRapidaComponent],
   templateUrl: './tienda.component.html',
   styleUrls: ['./tienda.component.css']
 })

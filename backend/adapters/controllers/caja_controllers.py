@@ -3,6 +3,11 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from application.use_cases.vender_producto import vender_producto
+from core.exceptions.producto_exceptions import (
+    ProductoNoEncontradoError,
+    StockInsuficienteError,
+)
 from adapters.controllers.base_controller import BaseCleanController
 from application.use_cases.productos_bajo_stock import obtener_productos_bajo_stock
 from infrastructure.django_apps.core_db.models import (
@@ -71,3 +76,26 @@ class ProductosBajoStockController(APIView):
 
         productos = obtener_productos_bajo_stock(limite)
         return Response(productos, status=status.HTTP_200_OK)
+class VenderProductoController(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        try:
+            resultado = vender_producto(
+                producto_id=int(request.data.get("producto_id")),
+                cantidad=int(request.data.get("cantidad", 1)),
+                metodo_pago=request.data.get("metodo_pago", "Efectivo"),
+                usuario=request.data.get("usuario", "recepcion"),
+            )
+        except (TypeError, ValueError):
+            return Response(
+                {"error": "Datos de venta invalidos."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except ProductoNoEncontradoError as e:
+            return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+        except StockInsuficienteError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(resultado, status=status.HTTP_201_CREATED)
