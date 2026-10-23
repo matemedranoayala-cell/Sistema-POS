@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, ViewChild, inject } from '@angular/core';
 import { ProductoService } from '../../../services/producto.service';
 import { VentaProductoService } from '../../../services/venta-producto.service';
 import { StockBajoComponent } from '../stock-bajo/stock-bajo.component';
@@ -42,12 +42,21 @@ export class VentaRapidaComponent implements OnInit {
 
   @ViewChild(StockBajoComponent) alerta?: StockBajoComponent;
 
+  /** Avisa al padre (Tienda) que se vendio algo, para que refresque sus listas. */
+  @Output() ventaRealizada = new EventEmitter<void>();
+
   productos: any[] = [];
   mensaje = '';
   error = false;
 
   ngOnInit(): void {
     this.cargar();
+  }
+
+  /** Recarga la lista de productos y la alerta de poco stock. */
+  refrescar(): void {
+    this.cargar();
+    this.alerta?.cargar();
   }
 
   cargar(): void {
@@ -69,8 +78,8 @@ export class VentaRapidaComponent implements OnInit {
       next: r => {
         this.error = false;
         this.mensaje = `Vendido: ${r.producto} (Bs ${r.total}). Quedan ${r.stock_restante}.`;
-        this.cargar();
-        this.alerta?.cargar();
+        this.refrescar();
+        this.ventaRealizada.emit();
       },
       error: e => {
         this.error = true;

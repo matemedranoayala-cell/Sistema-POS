@@ -2,7 +2,9 @@ from django.urls import path
 from adapters.controllers.api_controllers import LoginController, LogoutController
 from adapters.controllers.personal_controllers import PersonalController
 from adapters.controllers.caja_controllers import (
+    AjustarStockController,
     ProductosBajoStockController,
+    VenderCarritoController,
     VenderProductoController,
 )
 from adapters.controllers.operaciones_controllers import (
@@ -32,4 +34,6 @@ urlpatterns = [
     path('api/registro-clases/', RegistroClaseController.as_view(), name='registro_clases'),
     path('api/bitacora/', BitacoraController.as_view(), name='bitacora'),
     path('api/ventas/producto/', VenderProductoController.as_view(), name='vender_producto'),
+    path('api/ventas/carrito/', VenderCarritoController.as_view(), name='vender_carrito'),
+    path('api/productos/<int:pk>/stock/', AjustarStockController.as_view(), name='ajustar_stock'),
 ]

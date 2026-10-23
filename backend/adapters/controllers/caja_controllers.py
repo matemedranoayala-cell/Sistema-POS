@@ -3,6 +3,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from application.use_cases.ajustar_stock import ajustar_stock
+from application.use_cases.vender_carrito import vender_carrito
 from application.use_cases.vender_producto import vender_producto
 from core.exceptions.producto_exceptions import (
     ProductoNoEncontradoError,
@@ -49,7 +51,7 @@ class CierreCajaController(BaseCleanController):
             usuario=usr,
             operacion='Arqueo y Cierre (RECEPCION)',
             modulo='Caja',
-            detalle=f"Total: Bs {tot} - {obs}",
+            detalle=f"Total: Bs {tot}\n{obs}",
             estado='Registrado',
             color='blue'
         )
@@ -99,3 +101,52 @@ class VenderProductoController(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(resultado, status=status.HTTP_201_CREATED)
+
+
+class VenderCarritoController(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        try:
+            resultado = vender_carrito(
+                items=request.data.get("items") or [],
+                metodo_pago=request.data.get("metodo_pago", "Efectivo"),
+                usuario=request.data.get("usuario", "tienda"),
+            )
+        except (TypeError, ValueError, KeyError):
+            return Response(
+                {"error": "Datos de venta invalidos."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except ProductoNoEncontradoError as e:
+            return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+        except StockInsuficienteError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(resultado, status=status.HTTP_201_CREATED)
+
+
+class AjustarStockController(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request, pk):
+        try:
+            stock = request.data.get("stock")
+            incremento = request.data.get("incremento")
+            resultado = ajustar_stock(
+                producto_id=pk,
+                stock=int(stock) if stock is not None else None,
+                incremento=int(incremento) if incremento is not None else None,
+                usuario=request.data.get("usuario", "tienda"),
+            )
+        except (TypeError, ValueError):
+            return Response(
+                {"error": "Datos de ajuste invalidos."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except ProductoNoEncontradoError as e:
+            return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response(resultado, status=status.HTTP_200_OK)
