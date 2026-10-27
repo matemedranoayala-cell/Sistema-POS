@@ -13,6 +13,10 @@ export class VentaService {
     return this.http.get<any[]>(this.apiUrl);
   }
 
+  obtenerDetalles(): Observable<any[]> {
+    return this.http.get<any[]>('http://127.0.0.1:8000/api/detalle-ventas/');
+  }
+
   registrarVenta(datos: { total: number; metodo_pago: string; concepto?: string }): Observable<any> {
     const sesion = this.auth.obtenerSesion();
     return this.http.post(this.apiUrl, {
