@@ -1,0 +1,49 @@
+<div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px;">
+  <h2 style="margin: 0 0 20px 0; font-size: 16px; font-weight: 600; color: #111827;">
+    Últimas Transacciones (Registro de Ventas)
+  </h2>
+
+  <p *ngIf="!cargando && ventasRecientes.length === 0" style="color: #6b7280; font-size: 14px; margin: 0;">
+    Aún no hay ventas registradas.
+  </p>
+
+  <div
+    *ngFor="let venta of ventasRecientes"
+    style="display: flex; align-items: center; padding: 14px 0; border-bottom: 1px solid #f3f4f6; gap: 12px;">
+    <div style="width: 110px; color: #4b5563; font-size: 13px; font-weight: 500;">
+      {{ venta.hora }}
+    </div>
+
+    <div
+      [style.border-left-color]="venta.color === 'orange' ? '#f59e0b' : '#10b981'"
+      style="flex: 1; padding-left: 14px; border-left: 3px solid #10b981;">
+      <h4 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: #111827;">
+        {{ venta.cliente }}
+        <span style="color: #9ca3af; font-size: 12px; margin-left: 6px;">{{ venta.ticket }}</span>
+        <span *ngIf="venta.telefono" style="color: #059669; font-size: 12px; margin-left: 6px;">({{ venta.telefono }})</span>
+      </h4>
+      <p style="margin: 0; font-size: 13px; color: #6b7280;">{{ venta.items }}</p>
+    </div>
+
+    <div style="font-weight: 700; color: #111827; font-size: 14px; min-width: 75px; text-align: right;">
+      Bs {{ venta.total }}
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span
+        [style.background-color]="venta.color === 'orange' ? '#f59e0b' : '#10b981'"
+        style="padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; color: #ffffff;">
+        {{ venta.estado }}
+      </span>
+
+      <button
+        *ngIf="venta.telefono"
+        type="button"
+        (click)="reenviarWhatsApp.emit(venta)"
+        title="Enviar ticket por WhatsApp"
+        style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">
+        WhatsApp
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,90 @@
+<div
+  (click)="cerrar.emit()"
+  style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(17, 24, 39, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000;">
+
+  <div
+    (click)="$event.stopPropagation()"
+    style="background: #ffffff; width: 95%; max-width: 820px; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);">
+
+    <div style="padding: 20px 28px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+      <h2 style="margin: 0; font-size: 18px; font-weight: 700; color: #111827;">Gestión de Inventario</h2>
+      <button type="button" (click)="cerrar.emit()" style="background: none; border: none; color: #6b7280; cursor: pointer;">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="22" height="22">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div style="padding: 24px; max-height: 62vh; overflow-y: auto;">
+      <div *ngIf="productoSeleccionado" style="background: #f0fdf4; border: 1px solid #86efac; padding: 16px; border-radius: 10px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+        <div>
+          <strong style="font-size: 14px; color: #0f172a;">{{ productoSeleccionado.nombre }}</strong>
+          <span style="display: block; font-size: 12px; color: #475569;">Stock actual: {{ productoSeleccionado.stock }} unidades</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <select [(ngModel)]="modoAjuste" style="padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+            <option value="agregar">Sumar unidades (+)</option>
+            <option value="fijar">Fijar conteo exacto</option>
+          </select>
+          <input
+            type="number"
+            min="0"
+            [(ngModel)]="cantidadAjuste"
+            placeholder="Cantidad"
+            style="width: 100px; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+          <button
+            type="button"
+            (click)="confirmarAjuste()"
+            style="background: #10b981; color: #ffffff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+            Guardar
+          </button>
+          <button
+            type="button"
+            (click)="productoSeleccionado = null"
+            style="background: #ffffff; color: #475569; border: 1px solid #cbd5e1; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
+            Cancelar
+          </button>
+        </div>
+      </div>
+
+      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+        <thead>
+        <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb; color: #4b5563;">
+          <th style="padding: 12px 16px;">Producto</th>
+          <th style="padding: 12px 16px;">Categoría</th>
+          <th style="padding: 12px 16px;">Precio Venta</th>
+          <th style="padding: 12px 16px;">Stock Físico</th>
+          <th style="padding: 12px 16px;">Acción</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let prod of catalogo" style="border-bottom: 1px solid #e5e7eb;">
+          <td style="padding: 14px 16px; font-weight: 600; color: #111827;">{{ prod.nombre }}</td>
+          <td style="padding: 14px 16px; color: #4b5563;">{{ prod.categoria }}</td>
+          <td style="padding: 14px 16px; color: #111827;">Bs {{ prod.precio }}</td>
+          <td style="padding: 14px 16px;">
+              <span [style.color]="prod.stock <= umbralStockBajo ? '#ef4444' : '#10b981'" style="font-weight: 700;">
+                {{ prod.stock }} unid.
+              </span>
+          </td>
+          <td style="padding: 14px 16px; display: flex; gap: 8px;">
+            <button
+              type="button"
+              (click)="abrirSubModal(prod, 'agregar')"
+              style="background: #ffffff; border: 1px solid #d1d5db; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer;">
+              + Reponer
+            </button>
+            <button
+              type="button"
+              (click)="abrirSubModal(prod, 'fijar')"
+              style="background: #ffffff; border: 1px solid #d1d5db; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer;">
+              Ajustar
+            </button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

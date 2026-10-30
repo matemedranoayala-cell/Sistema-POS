@@ -1,0 +1,210 @@
+<div
+  (click)="cerrar.emit()"
+  style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(17, 24, 39, 0.72); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 1000;">
+
+  <div
+    (click)="$event.stopPropagation()"
+    style="background: #f3f4f6; width: 95%; max-width: 1220px; height: 86vh; border-radius: 16px; overflow: hidden; display: flex; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+
+    <div style="flex: 1.8; background: #f9fafb; display: flex; flex-direction: column; border-right: 1px solid #e5e7eb;">
+      <div style="padding: 20px 24px; border-bottom: 1px solid #e5e7eb; background: #ffffff; display: flex; align-items: center; gap: 16px;">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 700; color: #111827;">Catálogo de Productos</h2>
+        <input
+          type="text"
+          placeholder="Buscar bebida, suplemento o equipo..."
+          [(ngModel)]="busqueda"
+          style="flex: 1; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none;">
+      </div>
+
+      <div style="padding: 20px 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 14px; overflow-y: auto;">
+        <p *ngIf="cargando && catalogo.length === 0" style="color: #6b7280; font-size: 14px; grid-column: 1 / -1;">
+          Cargando productos...
+        </p>
+        <p *ngIf="!cargando && catalogoFiltrado.length === 0" style="color: #6b7280; font-size: 14px; grid-column: 1 / -1;">
+          No se encontraron productos.
+        </p>
+
+        <div
+          *ngFor="let prod of catalogoFiltrado"
+          (click)="agregarAlCarrito(prod)"
+          [style.opacity]="prod.stock <= 0 ? '0.45' : '1'"
+          [style.cursor]="prod.stock <= 0 ? 'not-allowed' : 'pointer'"
+          style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; position: relative; overflow: hidden; transition: transform 0.15s;">
+          <div
+            [style.background]="prod.color === 'blue' ? '#3b82f6' : (prod.color === 'orange' ? '#f59e0b' : (prod.color === 'red' ? '#ef4444' : '#10b981'))"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 4px;">
+          </div>
+          <h4 style="margin: 8px 0 4px 0; font-size: 14px; color: #111827; font-weight: 600;">{{ prod.nombre }}</h4>
+          <span style="font-size: 11px; color: #6b7280; display: block; margin-bottom: 10px; text-transform: uppercase;">{{ prod.categoria }}</span>
+          <strong style="font-size: 16px; color: #10b981; font-weight: 800;">Bs {{ prod.precio }}</strong>
+          <span style="display: block; margin-top: 6px; font-size: 12px; color: #6b7280;">
+            {{ prod.stock > 0 ? 'Stock: ' + prod.stock : 'Agotado' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex: 1.2; background: #ffffff; display: flex; flex-direction: column;">
+      <div style="padding: 20px 24px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 700; color: #111827;">
+          {{ mostrarMiniFormCobro ? 'Datos del Cliente y Envío WhatsApp' : 'Ticket Actual' }}
+        </h2>
+        <button
+          type="button"
+          (click)="cerrar.emit()"
+          style="background: transparent; border: none; color: #6b7280; cursor: pointer; display: flex; align-items: center;">
+          <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="22" height="22">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div *ngIf="!mostrarMiniFormCobro" style="flex: 1; padding: 20px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
+        <div *ngIf="carrito.length === 0" style="text-align: center; color: #9ca3af; font-size: 14px; margin-top: 40px;">
+          Selecciona los productos que pidió el atleta o entrenador a la izquierda.
+        </div>
+
+        <div
+          *ngFor="let item of carrito; let i = index"
+          style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px dashed #e5e7eb;">
+          <div style="display: flex; flex-direction: column;">
+            <strong style="font-size: 14px; color: #111827;">{{ item.nombre }}</strong>
+            <span style="font-size: 12px; color: #6b7280;">Bs {{ item.precio }} c/u</span>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button type="button" (click)="cambiarCantidad(i, -1)" style="width: 26px; height: 26px; border-radius: 6px; border: 1px solid #d1d5db; background: #f9fafb; cursor: pointer; font-weight: 700;">-</button>
+            <span style="font-size: 13px; font-weight: 700; min-width: 20px; text-align: center;">{{ item.cantidad }}</span>
+            <button type="button" (click)="cambiarCantidad(i, 1)" style="width: 26px; height: 26px; border-radius: 6px; border: 1px solid #d1d5db; background: #f9fafb; cursor: pointer; font-weight: 700;">+</button>
+            <strong style="font-size: 14px; color: #111827; min-width: 60px; text-align: right;">Bs {{ item.subtotal }}</strong>
+            <button
+              type="button"
+              (click)="quitarDelCarrito(i)"
+              style="background: #fee2e2; border: none; border-radius: 6px; padding: 5px 8px; font-size: 12px; cursor: pointer; color: #ef4444; font-weight: 700;">
+              Quitar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="mostrarMiniFormCobro" style="flex: 1; padding: 20px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;">
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px 14px; border-radius: 10px;">
+          <label style="font-size: 12px; font-weight: 700; color: #166534; display: block; margin-bottom: 6px;">
+            1. Buscar Estudiante, Coach o Encargado Preguardado
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="busquedaMiembro"
+            placeholder="Escribe nombre o CI para autocompletar..."
+            style="width: 100%; padding: 9px 12px; border: 1px solid #86efac; border-radius: 8px; font-size: 13px; box-sizing: border-box; background: #ffffff;">
+
+          <div *ngIf="sugerenciasMiembros.length > 0" style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;">
+            <button
+              *ngFor="let m of sugerenciasMiembros"
+              type="button"
+              (click)="seleccionarMiembro(m)"
+              style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 5px 10px; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; color: #0f172a;">
+              <strong>{{ m.nombre }}</strong>
+              <span style="color: #059669; font-weight: 600;">({{ m.tipo }})</span>
+            </button>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: #374151; display: block; margin-bottom: 4px;">Nombre del Cliente *</label>
+            <input
+              type="text"
+              [(ngModel)]="datosCobro.clienteNombre"
+              placeholder="Ej. Mauricio"
+              style="width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; box-sizing: border-box;">
+          </div>
+
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: #374151; display: block; margin-bottom: 4px;">Perfil en la Academia</label>
+            <select
+              [(ngModel)]="datosCobro.rolCliente"
+              style="width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; box-sizing: border-box; background: #ffffff;">
+              <option value="Estudiante">Estudiante / Atleta</option>
+              <option value="Maestro / Coach">Maestro / Coach</option>
+              <option value="Encargado">Encargado / Staff</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: #374151; display: block; margin-bottom: 4px;">Número de WhatsApp *</label>
+            <input
+              type="text"
+              [(ngModel)]="datosCobro.telefono"
+              placeholder="Ej. 71234567"
+              style="width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; box-sizing: border-box;">
+          </div>
+
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: #374151; display: block; margin-bottom: 4px;">Modalidad de Pago</label>
+            <select
+              [(ngModel)]="datosCobro.modalidadPago"
+              style="width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; box-sizing: border-box; background: #ffffff;">
+              <option value="Por cobrar al finalizar entreno">Paga al finalizar entreno (WP)</option>
+              <option value="Efectivo">Pagado en Efectivo</option>
+              <option value="QR / Transferencia">Pagado por QR / Transferencia</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+          <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 6px;">
+            Vista previa automática del Ticket WhatsApp:
+          </span>
+          <pre style="margin: 0; font-family: inherit; font-size: 12px; color: #1e293b; white-space: pre-wrap;">{{ vistaPreviaMensaje }}</pre>
+        </div>
+      </div>
+
+      <div style="padding: 18px 24px; background: #f9fafb; border-top: 1px solid #e5e7eb;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <span style="font-size: 13px; font-weight: 700; color: #4b5563;">TOTAL DEL PEDIDO</span>
+          <span style="font-size: 26px; color: #111827; font-weight: 800;">Bs {{ totalCarrito }}</span>
+        </div>
+
+        <button
+          *ngIf="!mostrarMiniFormCobro"
+          type="button"
+          [disabled]="carrito.length === 0"
+          (click)="abrirFormularioCobro()"
+          [style.background]="carrito.length === 0 ? '#d1d5db' : '#10b981'"
+          style="width: 100%; color: #ffffff; border: none; padding: 14px; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer;">
+          Continuar a Cobro y Ticket WhatsApp
+        </button>
+
+        <div *ngIf="mostrarMiniFormCobro" style="display: flex; flex-direction: column; gap: 8px;">
+          <button
+            type="button"
+            [disabled]="procesando"
+            (click)="finalizarYEnviar(true)"
+            style="width: 100%; background: #16a34a; color: #ffffff; border: none; padding: 13px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;">
+            {{ procesando ? 'Procesando...' : 'Registrar Pedido y Enviar Ticket al WhatsApp' }}
+          </button>
+
+          <div style="display: flex; gap: 8px;">
+            <button
+              type="button"
+              (click)="mostrarMiniFormCobro = false"
+              style="flex: 1; background: #ffffff; color: #374151; border: 1px solid #d1d5db; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">
+              Volver al Carrito
+            </button>
+            <button
+              type="button"
+              [disabled]="procesando"
+              (click)="finalizarYEnviar(false)"
+              style="flex: 1; background: #111827; color: #ffffff; border: none; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">
+              Solo Registrar en Caja
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

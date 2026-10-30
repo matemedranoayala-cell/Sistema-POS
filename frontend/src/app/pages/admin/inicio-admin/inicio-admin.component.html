@@ -9,28 +9,30 @@
       <h2>Centro de Control Operativo</h2>
       <p>Supervisión en tiempo real de recepcionistas, tienda y entrenadores</p>
     </div>
+
     <div class="grid-metricas">
       <app-tarjeta-metrica
         titulo="Ingresos Consolidados"
-        valor="Bs 4,250"
+        [valor]="ingresosTexto"
         [alerta]="false"
         (abrir)="abrirGrafico('ingresos')">
       </app-tarjeta-metrica>
 
       <app-tarjeta-metrica
         titulo="Ocupación Global"
-        valor="42 Atletas"
+        [valor]="ocupacionTexto"
         [alerta]="false"
         (abrir)="abrirGrafico('ocupacion')">
       </app-tarjeta-metrica>
 
       <app-tarjeta-metrica
         titulo="Daños por Firmar"
-        valor="3 Pendientes"
-        [alerta]="true"
+        [valor]="danosTexto"
+        [alerta]="tieneDanos"
         (abrir)="abrirGrafico('danos')">
       </app-tarjeta-metrica>
     </div>
+
     <div class="grid-contenido">
       <div class="col-logs">
         <app-logs-paginados></app-logs-paginados>
@@ -41,9 +43,11 @@
     </div>
   </div>
 </div>
+
 <app-modal-crear-usuario
   *ngIf="mostrarModalUsuario"
-  (cerrar)="mostrarModalUsuario = false">
+  (usuarioCreado)="refrescarPaneles()"
+  (cerrar)="mostrarModalUsuario = false; refrescarPaneles()">
 </app-modal-crear-usuario>
 
 <app-modal-exportar
@@ -54,10 +58,11 @@
 <app-modal-graficos
   *ngIf="mostrarModalGraficos"
   [tipoGrafico]="tipoGraficoActual"
-  (cerrar)="mostrarModalGraficos = false">
+  (cerrar)="mostrarModalGraficos = false; cargarMetricas()">
 </app-modal-graficos>
 
 <app-modal-gestion-usuarios
   *ngIf="mostrarModalGestion"
-  (cerrar)="mostrarModalGestion = false">
+  (actualizado)="refrescarPaneles()"
+  (cerrar)="mostrarModalGestion = false; refrescarPaneles()">
 </app-modal-gestion-usuarios>

@@ -1,0 +1,29 @@
+<header style="background: #ffffff; padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb;">
+  <div style="display: flex; align-items: center; gap: 16px;">
+    <div style="background: #10b981; color: #ffffff; width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; font-size: 13px; font-weight: 700;">
+      KT
+    </div>
+    <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: #111827;">Kiosko y Tienda</h2>
+    <span style="color: #d1d5db;">|</span>
+    <span style="color: #6b7280; font-size: 14px;">{{ fechaActual }}</span>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 16px; font-size: 14px; color: #374151; font-weight: 500;">
+    <span>{{ usuarioActual }}</span>
+    <button
+      type="button"
+      (click)="abrirArqueo.emit()"
+      style="background: #111827; color: #ffffff; border: none; padding: 9px 16px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+      Arqueo de Caja
+    </button>
+    <button
+      type="button"
+      (click)="cerrarSesion()"
+      style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 9px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="16" height="16">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+      </svg>
+      Cerrar Sesión
+    </button>
+  </div>
+</header>

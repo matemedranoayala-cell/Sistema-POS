@@ -1,0 +1,93 @@
+<div
+  (click)="cerrar.emit()"
+  style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 1000;">
+
+  <div
+    (click)="$event.stopPropagation()"
+    style="background: #ffffff; width: 100%; max-width: 540px; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+
+    <div style="padding: 20px 28px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; background: #f9fafb;">
+      <div>
+        <h2 style="margin: 0; font-size: 18px; font-weight: 700; color: #111827;">Crear Nuevo Producto</h2>
+        <p style="margin: 4px 0 0 0; font-size: 13px; color: #6b7280;">Registrar artículo en el catálogo de Kiosko y Tienda</p>
+      </div>
+      <button type="button" (click)="cerrar.emit()" style="background: none; border: none; color: #6b7280; cursor: pointer;">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="22" height="22">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div style="padding: 24px 28px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 6px;">
+        <label style="font-size: 13px; font-weight: 600; color: #374151;">Nombre del Producto *</label>
+        <input
+          type="text"
+          [(ngModel)]="producto.nombre"
+          placeholder="Ej. Monster Energy Zero, Agua 600ml, Vendas 4.5m..."
+          style="padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; color: #111827;">
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label style="font-size: 13px; font-weight: 600; color: #374151;">Categoría *</label>
+        <select
+          [(ngModel)]="producto.categoria"
+          style="padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; color: #111827; background: #ffffff;">
+          <option value="Bebidas y Energizantes">Bebidas y Energizantes</option>
+          <option value="Suplementos y Barras">Suplementos y Barras</option>
+          <option value="Equipamiento Deportivo">Equipamiento Deportivo</option>
+          <option value="Indumentaria Kombat">Indumentaria Kombat</option>
+        </select>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label style="font-size: 13px; font-weight: 600; color: #374151;">Código / SKU (Opcional)</label>
+        <input
+          type="text"
+          [(ngModel)]="producto.sku"
+          placeholder="Autogenerado si se deja vacío"
+          style="padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; color: #111827;">
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label style="font-size: 13px; font-weight: 600; color: #374151;">Precio de Venta (Bs) *</label>
+        <input
+          type="number"
+          min="0.5"
+          step="0.5"
+          [(ngModel)]="producto.precio"
+          placeholder="Ej. 15.00"
+          style="padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; color: #111827;">
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label style="font-size: 13px; font-weight: 600; color: #374151;">Stock Físico Inicial *</label>
+        <input
+          type="number"
+          min="0"
+          step="1"
+          [(ngModel)]="producto.stock"
+          (keyup.enter)="guardarProducto()"
+          placeholder="Ej. 24"
+          style="padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; color: #111827;">
+      </div>
+    </div>
+
+    <div style="padding: 16px 28px; background: #f9fafb; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 12px;">
+      <button
+        type="button"
+        (click)="cerrar.emit()"
+        style="background: #ffffff; border: 1px solid #d1d5db; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; color: #374151; cursor: pointer;">
+        Cancelar
+      </button>
+      <button
+        type="button"
+        [disabled]="guardando"
+        (click)="guardarProducto()"
+        style="background: #2563eb; color: #ffffff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
+        {{ guardando ? 'Guardando...' : 'Guardar Producto' }}
+      </button>
+    </div>
+
+  </div>
+</div>

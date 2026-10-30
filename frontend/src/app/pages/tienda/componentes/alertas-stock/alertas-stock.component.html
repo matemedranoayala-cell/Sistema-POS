@@ -1,0 +1,28 @@
+<div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px;">
+  <h2 style="margin: 0 0 20px 0; font-size: 16px; font-weight: 600; color: #111827;">
+    Alertas de Stock Crítico
+  </h2>
+
+  <p *ngIf="!cargando && inventarioCritico.length === 0" style="color: #6b7280; font-size: 14px; margin: 0;">
+    Sin alertas: todo el stock está en niveles normales.
+  </p>
+
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <div
+      *ngFor="let prod of inventarioCritico"
+      style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border: 1px solid #e5e7eb; border-left: 3px solid #ef4444; border-radius: 8px; background: #f9fafb;">
+      <div style="display: flex; flex-direction: column;">
+        <strong style="font-size: 14px; font-weight: 600; color: #111827;">{{ prod.nombre }}</strong>
+        <span style="font-size: 12px; color: #6b7280; margin-top: 2px;">
+          Stock: <b style="color: #ef4444;">{{ prod.stock }}</b> (Mín: {{ umbralStockBajo }})
+        </span>
+      </div>
+      <button
+        type="button"
+        (click)="reponer.emit(prod)"
+        style="background: #ffffff; color: #374151; border: 1px solid #d1d5db; padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer;">
+        Reponer
+      </button>
+    </div>
+  </div>
+</div>

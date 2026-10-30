@@ -43,9 +43,10 @@ export class InicioAdminComponent implements OnInit {
   mostrarModalGestion = false;
   tipoGraficoActual = '';
 
-  ingresosTexto = 'Bs 0';
+  ingresosTexto = 'Bs 0.00';
   ocupacionTexto = '0 Atletas';
   danosTexto = '0 Pendientes';
+  tieneDanos = false;
 
   ngOnInit() {
     this.cargarMetricas();
@@ -54,22 +55,34 @@ export class InicioAdminComponent implements OnInit {
   cargarMetricas() {
     this.ventaService.obtenerVentas().subscribe({
       next: (ventas) => {
-        const total = (ventas || []).reduce((acc, v) => acc + Number(v.total || 0), 0);
-        this.ingresosTexto = `Bs ${total.toLocaleString('es-BO')}`;
+        const lista = Array.isArray(ventas) ? ventas : [];
+        const total = lista.reduce((acc, v) => acc + Number(v.total || 0), 0);
+        this.ingresosTexto = `Bs ${total.toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      },
+      error: () => {
+        this.ingresosTexto = 'Bs 0.00';
       }
     });
 
     this.alumnoService.obtenerAlumnos().subscribe({
       next: (alumnos) => {
         const total = Array.isArray(alumnos) ? alumnos.length : 0;
-        this.ocupacionTexto = `${total} Atletas`;
+        this.ocupacionTexto = `${total} ${total === 1 ? 'Atleta' : 'Atletas'}`;
+      },
+      error: () => {
+        this.ocupacionTexto = '0 Atletas';
       }
     });
 
     this.reporteService.obtenerReportes().subscribe({
       next: (reportes) => {
         const total = Array.isArray(reportes) ? reportes.length : 0;
-        this.danosTexto = `${total} Pendientes`;
+        this.tieneDanos = total > 0;
+        this.danosTexto = `${total} ${total === 1 ? 'Pendiente' : 'Pendientes'}`;
+      },
+      error: () => {
+        this.tieneDanos = false;
+        this.danosTexto = '0 Pendientes';
       }
     });
   }
