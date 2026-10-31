@@ -76,6 +76,11 @@ class Venta(models.Model):
     fecha = models.DateTimeField(auto_now_add=True)
     total = models.DecimalField(max_digits=10, decimal_places=2)
     metodo_pago = models.CharField(max_length=50)
+    cliente_nombre = models.CharField(max_length=150, blank=True, default='')
+    cliente_telefono = models.CharField(max_length=30, blank=True, default='')
+    rol_cliente = models.CharField(max_length=50, blank=True, default='')
+    vendedor = models.CharField(max_length=150, blank=True, default='')
+    estado_pago = models.CharField(max_length=20, default='PAGADO')
 
     class Meta:
         db_table = 'api_venta'

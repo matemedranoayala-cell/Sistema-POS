@@ -15,7 +15,12 @@ export class AuthService {
       );
 
       if (response && response.status === 'ok') {
-        const userRol = response.rol || 'admin';
+        const userRol = typeof response.rol === 'string'
+          ? response.rol.trim().toLowerCase()
+          : '';
+        if (!userRol) {
+          return { success: true };
+        }
         localStorage.setItem('kombat-session', JSON.stringify({ username, rol: userRol }));
         localStorage.setItem('username', username);
         localStorage.setItem('rol', userRol.toUpperCase());

@@ -13,7 +13,14 @@ from infrastructure.django_apps.core_db.models import (
 
 
 @transaction.atomic
-def vender_carrito(items, metodo_pago="Efectivo", usuario="recepcion"):
+def vender_carrito(
+    items,
+    metodo_pago="Efectivo",
+    usuario="recepcion",
+    cliente_nombre="",
+    cliente_telefono="",
+    rol_cliente="",
+):
     """Registra UNA venta (un ticket) con varios productos.
 
     Es atomica: si algun producto no existe o no tiene stock suficiente,
@@ -21,6 +28,21 @@ def vender_carrito(items, metodo_pago="Efectivo", usuario="recepcion"):
     """
     if not items:
         raise ValueError("El carrito esta vacio")
+
+    modalidades_pago = {
+        "Efectivo",
+        "QR / Transferencia",
+        "Por cobrar al finalizar entreno",
+    }
+    if not isinstance(metodo_pago, str) or metodo_pago not in modalidades_pago:
+        raise ValueError("La modalidad de pago no es valida")
+    cliente_nombre = str(cliente_nombre or "").strip()
+    cliente_telefono = str(cliente_telefono or "").strip()
+    rol_cliente = str(rol_cliente or "").strip()
+    if not cliente_nombre:
+        raise ValueError("El nombre del cliente es obligatorio")
+    if len(cliente_nombre) > 150 or len(cliente_telefono) > 30 or len(rol_cliente) > 50:
+        raise ValueError("Los datos del cliente exceden el tamaño permitido")
 
     # Si el mismo producto llega repetido, se suman las cantidades.
     cantidades = {}
@@ -50,7 +72,20 @@ def vender_carrito(items, metodo_pago="Efectivo", usuario="recepcion"):
             )
 
     total = sum(productos[pid].precio * cant for pid, cant in cantidades.items())
-    venta = Venta.objects.create(total=total, metodo_pago=metodo_pago)
+    estado_pago = (
+        "PENDIENTE"
+        if metodo_pago == "Por cobrar al finalizar entreno"
+        else "PAGADO"
+    )
+    venta = Venta.objects.create(
+        total=total,
+        metodo_pago=metodo_pago,
+        cliente_nombre=cliente_nombre,
+        cliente_telefono=cliente_telefono,
+        rol_cliente=rol_cliente,
+        vendedor=str(usuario or "").strip(),
+        estado_pago=estado_pago,
+    )
 
     lineas = []
     for producto_id, cantidad in cantidades.items():
@@ -77,14 +112,22 @@ def vender_carrito(items, metodo_pago="Efectivo", usuario="recepcion"):
         usuario=usuario,
         operacion="Venta de Productos (TIENDA)",
         modulo="Tienda",
-        detalle=f"{resumen} - Bs {total}",
+        detalle=(
+            f"{resumen} - Bs {total} - Cliente: {venta.cliente_nombre} "
+            f"- Pago: {metodo_pago} ({estado_pago})"
+        ),
         estado="Registrado",
-        color="green",
+        color="orange" if estado_pago == "PENDIENTE" else "green",
     )
 
     return {
         "venta_id": venta.id,
         "total": float(total),
         "metodo_pago": metodo_pago,
+        "estado_pago": estado_pago,
+        "cliente_nombre": venta.cliente_nombre,
+        "cliente_telefono": venta.cliente_telefono,
+        "rol_cliente": venta.rol_cliente,
+        "vendedor": venta.vendedor,
         "items": lineas,
     }

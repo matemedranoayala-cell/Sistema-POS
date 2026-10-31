@@ -77,8 +77,12 @@
       <div class="dashboard-columns">
         <app-transacciones-tienda
           [ventasRecientes]="ventasRecientes"
+          [todasLasVentas]="ventasHistorial"
+          [totalVentas]="ventasHistorial.length"
           [cargando]="cargando"
-          (reenviarWhatsApp)="abrirWhatsAppTicket($event)">
+          [pagoEnProcesoId]="pagoEnProcesoId"
+          (reenviarWhatsApp)="abrirWhatsAppTicket($event)"
+          (marcarPagada)="marcarVentaPagada($event)">
         </app-transacciones-tienda>
 
         <app-alertas-stock

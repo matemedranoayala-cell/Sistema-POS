@@ -54,11 +54,13 @@ export class TiendaComponent implements OnInit {
   catalogo: any[] = [];
   categorias: string[] = [];
   ventasRecientes: any[] = [];
+  ventasHistorial: any[] = [];
   inventarioCritico: any[] = [];
   ventasTurno = 0;
   cargando = false;
   errorCarga = false;
   procesando = false;
+  pagoEnProcesoId: number | null = null;
 
   private ventasApi: any[] = [];
   private detallesApi: any[] = [];
@@ -134,7 +136,11 @@ export class TiendaComponent implements OnInit {
 
     const hoy = this.hoyISO();
     this.ventasTurno = this.ventasApi
-      .filter(v => v.fecha === hoy)
+      .filter(v =>
+        (v.fecha_local || v.fecha) === hoy &&
+        String(v.metodo_pago || '').toLowerCase() === 'efectivo' &&
+        String(v.estado_pago || 'PAGADO').toUpperCase() === 'PAGADO'
+      )
       .reduce((acc, v) => acc + Number(v.total ?? 0), 0);
 
     const nombres = new Map(this.catalogo.map(p => [p.id, p.nombre] as [number, string]));
@@ -148,24 +154,56 @@ export class TiendaComponent implements OnInit {
 
     const metaTickets = this.leerTicketsLocales();
 
-    this.ventasRecientes = this.ventasApi.slice(0, 8).map(v => {
+    this.ventasHistorial = this.ventasApi.map(v => {
       const meta = metaTickets[String(v.id)] ?? {};
-      const modPago = String(meta.modalidadPago ?? '');
-      const esPendiente = modPago.includes('finalizar');
+      const modalidadPago = String(v.metodo_pago || meta.modalidadPago || 'Efectivo');
+      const estadoPago = String(
+        v.estado_pago ??
+        (modalidadPago.toLowerCase().includes('finalizar') ? 'PENDIENTE' : 'PAGADO')
+      ).toUpperCase();
+      const esPendiente = estadoPago === 'PENDIENTE';
       const itemsLista = itemsPorVenta.get(v.id) ?? ['Productos de tienda'];
       return {
         id: v.id,
         ticket: `TKT-${String(v.id).padStart(3, '0')}`,
-        cliente: meta.clienteNombre ? meta.clienteNombre : 'Cliente en Tienda',
-        telefono: meta.telefono ? meta.telefono : '',
-        rolCliente: meta.rolCliente ? meta.rolCliente : 'Estudiante',
-        vendedor: meta.vendedor ? meta.vendedor : this.usuarioActual,
+        cliente: v.cliente_nombre || meta.clienteNombre || 'Cliente en Tienda',
+        telefono: v.cliente_telefono || meta.telefono || '',
+        rolCliente: v.rol_cliente || meta.rolCliente || 'Estudiante',
+        vendedor: v.vendedor || meta.vendedor || this.usuarioActual,
         items: meta.resumenItems ? meta.resumenItems : itemsLista.join(', '),
         total: Number(v.total),
-        hora: v.fecha === hoy ? (v.hora ?? '') : `${v.fecha?.slice(8, 10)}/${v.fecha?.slice(5, 7)} ${v.hora ?? ''}`,
-        estado: esPendiente ? 'Pago fin entreno' : 'Pagado',
+        hora: (v.fecha_local || v.fecha) === hoy
+          ? (v.hora_local || v.hora || '')
+          : `${(v.fecha_local || v.fecha)?.slice(8, 10)}/${(v.fecha_local || v.fecha)?.slice(5, 7)} ${v.hora_local || v.hora || ''}`,
+        modalidadPago,
+        estado: esPendiente ? 'Pendiente de pago' : 'Pagado',
+        estadoPago,
         color: esPendiente ? 'orange' : 'green'
       };
+    });
+    this.ventasRecientes = this.ventasHistorial.slice(0, 5);
+  }
+
+  marcarVentaPagada(evento: {
+    ventaId: number;
+    metodoPago: 'Efectivo' | 'QR / Transferencia';
+  }): void {
+    if (this.pagoEnProcesoId !== null) return;
+    this.pagoEnProcesoId = evento.ventaId;
+
+    this.ventaService.marcarPagada(evento.ventaId, evento.metodoPago).subscribe({
+      next: () => {
+        this.toastr.success('El pago de la venta fue actualizado.', 'Pago registrado');
+        this.pagoEnProcesoId = null;
+        this.cargarDatos();
+      },
+      error: (error) => {
+        this.pagoEnProcesoId = null;
+        this.toastr.error(
+          error?.error?.error ?? 'No se pudo actualizar el pago.',
+          'Error'
+        );
+      }
     });
   }
 
@@ -219,40 +257,35 @@ export class TiendaComponent implements OnInit {
     this.procesando = true;
 
     const payload = evento.items.map(i => ({ producto_id: i.producto_id, cantidad: i.cantidad }));
-    const resumenItems = evento.items.map(i => `${i.nombre} (x${i.cantidad})`).join(', ');
-    const totalPedido = evento.items.reduce((acc, i) => acc + i.subtotal, 0);
 
-    this.ventaProductoService.venderCarrito(payload).subscribe({
+    this.ventaProductoService.venderCarrito(payload, {
+      metodoPago: evento.modalidadPago,
+      clienteNombre: evento.clienteNombre,
+      telefono: evento.telefono,
+      rolCliente: evento.rolCliente
+    }).subscribe({
       next: (r) => {
         this.procesando = false;
-        const ventaId = r.venta_id ? r.venta_id : Date.now();
-        const metaTickets = this.leerTicketsLocales();
-        metaTickets[String(ventaId)] = {
-          clienteNombre: evento.clienteNombre,
-          telefono: evento.telefono,
-          rolCliente: evento.rolCliente,
-          modalidadPago: evento.modalidadPago,
-          resumenItems: resumenItems,
-          vendedor: evento.vendedor
-        };
-        localStorage.setItem('kombat_tickets_tienda', JSON.stringify(metaTickets));
-
+        const ventaId = r.venta_id;
+        const resumenRegistrado = r.items
+          .map(i => `${i.producto} (x${i.cantidad})`)
+          .join(', ');
         this.bitacoraService.registrarEvento(
           'Venta Kiosko / Tienda',
           'Tienda POS',
-          `Cliente: ${evento.clienteNombre} (${evento.rolCliente}) - ${resumenItems} - Total: Bs ${totalPedido} (${evento.modalidadPago})`
+          `Cliente: ${r.cliente_nombre} (${r.rol_cliente}) - ${resumenRegistrado} - Total: Bs ${r.total} (${r.metodo_pago})`
         ).subscribe();
 
         if (evento.enviarWhatsApp && evento.telefono) {
           this.abrirWhatsAppTicket({
             ticket: `TKT-${String(ventaId).padStart(3, '0')}`,
-            cliente: evento.clienteNombre,
-            rolCliente: evento.rolCliente,
-            telefono: evento.telefono,
-            items: resumenItems,
-            total: totalPedido,
-            estado: evento.modalidadPago,
-            vendedor: evento.vendedor
+            cliente: r.cliente_nombre,
+            rolCliente: r.rol_cliente,
+            telefono: r.cliente_telefono,
+            items: resumenRegistrado,
+            total: r.total,
+            estado: r.estado_pago === 'PENDIENTE' ? 'Pendiente de pago' : r.metodo_pago,
+            vendedor: r.vendedor
           });
         }
 
@@ -322,7 +355,7 @@ export class TiendaComponent implements OnInit {
     for (const d of this.detallesApi) {
       const venta = ventas.get(d.venta);
       if (!venta) continue;
-      const fechaVenta = String(venta.fecha ?? '');
+      const fechaVenta = String(venta.fecha_local || venta.fecha || '');
       const producto = productos.get(d.producto);
       const catProd = String(producto?.categoria ?? '');
       const coincideFecha = fechaVenta >= fechaInicio && fechaVenta <= fechaFin;
@@ -330,17 +363,20 @@ export class TiendaComponent implements OnInit {
 
       if (coincideFecha && coincideCat) {
         const meta = metaTickets[String(d.venta)] ?? {};
+        const estadoPago = String(venta.estado_pago || 'PAGADO').toUpperCase();
         filas.push({
           Fecha: fechaVenta,
-          Hora: venta.hora ?? '',
+          Hora: venta.hora_local || venta.hora || '',
           Ticket: `TKT-${String(venta.id).padStart(3, '0')}`,
-          Cliente: meta.clienteNombre ? meta.clienteNombre : 'Cliente Tienda',
-          Celular: meta.telefono ? meta.telefono : 'S/N',
+          Cliente: venta.cliente_nombre || meta.clienteNombre || 'Cliente Tienda',
+          Celular: venta.cliente_telefono || meta.telefono || 'S/N',
+          Perfil: venta.rol_cliente || meta.rolCliente || '',
           Producto: producto?.nombre ?? `Producto #${d.producto}`,
           Categoria: catProd,
           Cantidad: Number(d.cantidad),
           Subtotal_Bs: Number(d.subtotal),
-          Estado: meta.modalidadPago ? meta.modalidadPago : (venta.metodo_pago ?? 'Efectivo')
+          Modalidad_Pago: venta.metodo_pago || meta.modalidadPago || 'Efectivo',
+          Estado: estadoPago === 'PENDIENTE' ? 'Pendiente de pago' : 'Pagado'
         });
       }
     }
@@ -364,7 +400,7 @@ export class TiendaComponent implements OnInit {
 
     this.cierreCajaService.registrarCierre({
       total_ingresos: montoFisico,
-      observaciones: `Cierre Tienda. Ventas turno: Bs ${this.ventasTurno.toFixed(2)}. ${nota}`
+      observaciones: `Cierre Tienda. Efectivo esperado por ventas: Bs ${this.ventasTurno.toFixed(2)}. ${nota}`
     }).subscribe({
       next: () => {
         this.toastr.success(`Arqueo guardado por Bs ${montoFisico}.`, 'Caja Cerrada');

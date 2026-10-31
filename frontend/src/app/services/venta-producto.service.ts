@@ -3,6 +3,24 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 
+export interface VentaCarritoResponse {
+  venta_id: number;
+  total: number;
+  metodo_pago: string;
+  estado_pago: string;
+  cliente_nombre: string;
+  cliente_telefono: string;
+  rol_cliente: string;
+  vendedor: string;
+  items: {
+    producto_id: number;
+    producto: string;
+    cantidad: number;
+    subtotal: number;
+    stock_restante: number;
+  }[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class VentaProductoService {
   private http = inject(HttpClient);
@@ -12,13 +30,21 @@ export class VentaProductoService {
   /** Una sola venta (un ticket) con varios productos. Es atomica en el servidor. */
   venderCarrito(
     items: { producto_id: number; cantidad: number }[],
-    metodoPago = 'Efectivo'
-  ): Observable<any> {
+    datosVenta: {
+      metodoPago: string;
+      clienteNombre: string;
+      telefono: string;
+      rolCliente: string;
+    }
+  ): Observable<VentaCarritoResponse> {
     const sesion = this.auth.obtenerSesion();
-    return this.http.post('http://127.0.0.1:8000/api/ventas/carrito/', {
+    return this.http.post<VentaCarritoResponse>('http://127.0.0.1:8000/api/ventas/carrito/', {
       items,
-      metodo_pago: metodoPago,
-      usuario: sesion.username
+      metodo_pago: datosVenta.metodoPago,
+      usuario: sesion.username,
+      cliente_nombre: datosVenta.clienteNombre,
+      cliente_telefono: datosVenta.telefono,
+      rol_cliente: datosVenta.rolCliente
     });
   }
 
