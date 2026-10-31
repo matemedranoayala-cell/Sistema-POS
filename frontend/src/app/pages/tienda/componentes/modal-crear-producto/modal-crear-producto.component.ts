@@ -1,9 +1,9 @@
 import { Component, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
 import { BitacoraService } from '../../../../services/bitacora.service';
+import { ProductoService } from '../../../../services/producto.service';
 
 @Component({
   selector: 'app-modal-crear-producto',
@@ -15,7 +15,7 @@ export class ModalCrearProductoComponent {
   @Output() cerrar = new EventEmitter<void>();
   @Output() productoCreado = new EventEmitter<void>();
 
-  private http = inject(HttpClient);
+  private productoService = inject(ProductoService);
   private toastr = inject(ToastrService);
   private bitacoraService = inject(BitacoraService);
 
@@ -61,7 +61,7 @@ export class ModalCrearProductoComponent {
       sku: skuFinal
     };
 
-    this.http.post('http://127.0.0.1:8000/api/productos/', payload).subscribe({
+    this.productoService.crearProducto(payload).subscribe({
       next: () => {
         this.guardando = false;
         this.bitacoraService.registrarEvento(

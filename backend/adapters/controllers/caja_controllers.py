@@ -1,9 +1,13 @@
+from zoneinfo import ZoneInfo
+
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.utils import timezone
 
 from application.use_cases.ajustar_stock import ajustar_stock
+from application.use_cases.marcar_venta_pagada import marcar_venta_pagada
 from application.use_cases.vender_carrito import vender_carrito
 from application.use_cases.vender_producto import vender_producto
 from core.exceptions.producto_exceptions import (
@@ -27,6 +31,14 @@ class ProductoController(BaseCleanController):
 
 class VentaController(BaseCleanController):
     model = Venta
+
+    def serializar(self, obj):
+        data = super().serializar(obj)
+        if obj.fecha:
+            fecha_local = timezone.localtime(obj.fecha, ZoneInfo("America/La_Paz"))
+            data["fecha_local"] = fecha_local.date().isoformat()
+            data["hora_local"] = fecha_local.strftime("%I:%M %p")
+        return data
 
 
 class DetalleVentaController(BaseCleanController):
@@ -113,6 +125,9 @@ class VenderCarritoController(APIView):
                 items=request.data.get("items") or [],
                 metodo_pago=request.data.get("metodo_pago", "Efectivo"),
                 usuario=request.data.get("usuario", "tienda"),
+                cliente_nombre=request.data.get("cliente_nombre", ""),
+                cliente_telefono=request.data.get("cliente_telefono", ""),
+                rol_cliente=request.data.get("rol_cliente", ""),
             )
         except (TypeError, ValueError, KeyError):
             return Response(
@@ -125,6 +140,32 @@ class VenderCarritoController(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(resultado, status=status.HTTP_201_CREATED)
+
+
+class MarcarVentaPagadaController(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request, pk):
+        try:
+            venta = marcar_venta_pagada(
+                venta_id=pk,
+                metodo_pago=request.data.get("metodo_pago"),
+                usuario=request.data.get("usuario", "tienda"),
+            )
+        except ValueError as error:
+            return Response(
+                {"error": str(error)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if venta is None:
+            return Response(
+                {"error": "Venta no encontrada"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return Response(VentaController().serializar(venta), status=status.HTTP_200_OK)
 
 
 class AjustarStockController(APIView):

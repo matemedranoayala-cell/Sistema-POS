@@ -8,7 +8,7 @@
   </p>
 
   <div
-    *ngFor="let venta of ventasRecientes"
+    *ngFor="let venta of ventasVisibles"
     style="display: flex; align-items: center; padding: 14px 0; border-bottom: 1px solid #f3f4f6; gap: 12px;">
     <div style="width: 110px; color: #4b5563; font-size: 13px; font-weight: 500;">
       {{ venta.hora }}
@@ -22,7 +22,9 @@
         <span style="color: #9ca3af; font-size: 12px; margin-left: 6px;">{{ venta.ticket }}</span>
         <span *ngIf="venta.telefono" style="color: #059669; font-size: 12px; margin-left: 6px;">({{ venta.telefono }})</span>
       </h4>
-      <p style="margin: 0; font-size: 13px; color: #6b7280;">{{ venta.items }}</p>
+      <p style="margin: 0; font-size: 13px; color: #6b7280;">
+        {{ venta.items }} · {{ venta.modalidadPago }}
+      </p>
     </div>
 
     <div style="font-weight: 700; color: #111827; font-size: 14px; min-width: 75px; text-align: right;">
@@ -44,6 +46,125 @@
         style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">
         WhatsApp
       </button>
+      <ng-container *ngIf="venta.estadoPago === 'PENDIENTE'">
+        <button
+          type="button"
+          [disabled]="pagoEnProcesoId === venta.id"
+          (click)="marcarPagada.emit({ ventaId: venta.id, metodoPago: 'Efectivo' })"
+          style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">
+          Efectivo
+        </button>
+        <button
+          type="button"
+          [disabled]="pagoEnProcesoId === venta.id"
+          (click)="marcarPagada.emit({ ventaId: venta.id, metodoPago: 'QR / Transferencia' })"
+          style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">
+          QR
+        </button>
+      </ng-container>
     </div>
   </div>
+
+  <button
+    *ngIf="totalVentas > ventasRecientes.length"
+    type="button"
+    (click)="abrirHistorial()"
+    style="margin-top: 16px; width: 100%; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; background: #f9fafb; color: #1f2937; font-size: 13px; font-weight: 600; cursor: pointer;">
+    Ver todas las ventas ({{ totalVentas }})
+  </button>
+</div>
+
+<div
+  *ngIf="mostrarHistorial"
+  (click)="mostrarHistorial = false"
+  style="position: fixed; inset: 0; z-index: 1100; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 23, 42, 0.68);">
+  <section
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="historial-ventas-titulo"
+    (click)="$event.stopPropagation()"
+    style="display: flex; flex-direction: column; width: min(100%, 980px); max-height: 90vh; overflow: hidden; border-radius: 16px; background: #fff; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);">
+    <header style="display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+      <div>
+        <h2 id="historial-ventas-titulo" style="margin: 0; color: #0f172a; font-size: 20px;">Historial de ventas</h2>
+        <p style="margin: 5px 0 0; color: #64748b; font-size: 13px;">Todos los registros de Tienda, del más reciente al más antiguo.</p>
+      </div>
+      <button
+        type="button"
+        aria-label="Cerrar historial"
+        (click)="mostrarHistorial = false"
+        style="border: 0; background: transparent; color: #64748b; font-size: 28px; cursor: pointer;">
+        ×
+      </button>
+    </header>
+
+    <div style="overflow-y: auto; padding: 20px 24px;">
+      <p *ngIf="todasLasVentas.length === 0" style="padding: 24px 0; color: #64748b; text-align: center;">
+        Todavía no hay ventas registradas.
+      </p>
+
+      <article
+        *ngFor="let venta of ventasPaginadas"
+        style="padding: 16px 0; border-bottom: 1px solid #e2e8f0;">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;">
+          <div style="min-width: 0;">
+            <strong>{{ venta.cliente }}</strong>
+            <span style="margin-left: 10px; color: #64748b; font-size: 12px;">{{ venta.ticket }}</span>
+            <p style="margin: 5px 0; color: #475569; font-size: 13px;">{{ venta.items }} · {{ venta.modalidadPago }}</p>
+            <small style="color: #64748b;">{{ venta.hora }}<span *ngIf="venta.telefono"> · {{ venta.telefono }}</span></small>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; white-space: nowrap;">
+            <strong>Bs {{ venta.total | number:'1.2-2' }}</strong>
+            <span
+              [style.background]="venta.estadoPago === 'PENDIENTE' ? '#fef3c7' : '#dcfce7'"
+              [style.color]="venta.estadoPago === 'PENDIENTE' ? '#b45309' : '#15803d'"
+              style="padding: 4px 8px; border-radius: 6px; font-size: 12px;">
+              {{ venta.estado }}
+            </span>
+          </div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
+          <button
+            *ngIf="venta.telefono"
+            type="button"
+            (click)="reenviarWhatsApp.emit(venta)"
+            style="padding: 7px 10px; border: 1px solid #86efac; border-radius: 7px; background: #fff; color: #15803d; font-size: 12px; font-weight: 600; cursor: pointer;">
+            Reenviar WhatsApp
+          </button>
+          <ng-container *ngIf="venta.estadoPago === 'PENDIENTE'">
+            <button
+              type="button"
+              [disabled]="pagoEnProcesoId === venta.id"
+              (click)="marcarPagada.emit({ ventaId: venta.id, metodoPago: 'Efectivo' })"
+              style="padding: 7px 10px; border: 1px solid #a7f3d0; border-radius: 7px; background: #fff; color: #047857; font-size: 12px; font-weight: 600; cursor: pointer;">
+              Marcar pagado en efectivo
+            </button>
+            <button
+              type="button"
+              [disabled]="pagoEnProcesoId === venta.id"
+              (click)="marcarPagada.emit({ ventaId: venta.id, metodoPago: 'QR / Transferencia' })"
+              style="padding: 7px 10px; border: 1px solid #bfdbfe; border-radius: 7px; background: #fff; color: #1d4ed8; font-size: 12px; font-weight: 600; cursor: pointer;">
+              Marcar pagado por QR
+            </button>
+          </ng-container>
+        </div>
+      </article>
+
+      <app-paginacion
+        [paginaActual]="paginaActual"
+        [totalItems]="todasLasVentas.length"
+        [itemsPorPagina]="itemsPorPagina"
+        (cambioPagina)="cambiarPagina($event)">
+      </app-paginacion>
+    </div>
+
+    <footer style="display: flex; justify-content: flex-end; padding: 14px 24px; border-top: 1px solid #e2e8f0; background: #f8fafc;">
+      <button
+        type="button"
+        (click)="mostrarHistorial = false"
+        style="padding: 9px 18px; border: 0; border-radius: 7px; background: #0f172a; color: #fff; font-weight: 600; cursor: pointer;">
+        Cerrar
+      </button>
+    </footer>
+  </section>
 </div>

@@ -80,7 +80,7 @@ export class TorniqueteMiniComponent implements OnInit {
   get registrosFiltrados(): any[] {
     const termino = String(this.busqueda || '').toLowerCase().trim();
     if (!termino) {
-      return this.registros.slice(0, 3);
+      return this.registros.slice(0, 1);
     }
 
     const coincidenciasAsistencia = this.registros.filter(reg => {
@@ -109,7 +109,7 @@ export class TorniqueteMiniComponent implements OnInit {
         estado: a.estado || 'Activo'
       }));
 
-    return [...coincidenciasAsistencia, ...coincidenciasPadron].slice(0, 3);
+    return [...coincidenciasAsistencia, ...coincidenciasPadron].slice(0, 2);
   }
 
   marcarIngreso() {

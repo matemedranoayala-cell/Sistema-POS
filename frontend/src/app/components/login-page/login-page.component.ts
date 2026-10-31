@@ -2,8 +2,6 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
 import { EntradaTextoComponent } from '../../compartido/componentes/entrada-texto/entrada-texto.component';
 import { BotonPrimarioComponent } from '../../compartido/componentes/boton-primario/boton-primario.component';
 
@@ -22,8 +20,7 @@ export class LoginPageComponent {
 
   constructor(
     private readonly authService: AuthService,
-    private router: Router,
-    private http: HttpClient
+    private router: Router
   ) {}
 
   async iniciarSesion(): Promise<void> {
@@ -38,13 +35,27 @@ export class LoginPageComponent {
     const response = await this.authService.login(this.usuario, this.contrasena);
 
     if (response.success) {
-      const rol = response.rol;
-      if (rol === 'admin') {
-        this.router.navigate(['/admin']);
-      } else if (rol === 'recepcion') {
-        this.router.navigate(['/recepcion']);
+      const rol = response.rol?.trim().toLowerCase();
+      const rutasPorRol: Record<string, string> = {
+        superadmin: '/superadmin',
+        admin: '/admin',
+        administrador: '/admin',
+        encargado_general: '/admin',
+        recepcion: '/recepcion',
+        recepcionista: '/recepcion',
+        caja: '/recepcion',
+        coach: '/coach',
+        entrenador: '/coach',
+        tienda: '/tienda',
+        encargado_tienda: '/tienda'
+      };
+      const ruta = rol ? rutasPorRol[rol] : undefined;
+
+      if (ruta) {
+        await this.router.navigate([ruta]);
       } else {
-        this.router.navigate(['/coach']);
+        this.mensajeError = 'Rol no reconocido. Contacta al administrador.';
+        this.cargando = false;
       }
     } else {
       this.mensajeError = 'Credenciales incorrectas. Intenta nuevamente.';
