@@ -1,6 +1,5 @@
-import os
+﻿import os
 from pathlib import Path
-
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -11,7 +10,7 @@ SECRET_KEY = 'django-insecure-r88o#b35+*a2xo6i8m=9&fs1&bf^8z28e7xa_pqb=)rv1^^^('
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'corsheaders',
@@ -81,9 +80,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-bo'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/La_Paz'
 
 USE_I18N = True
 
@@ -100,6 +99,7 @@ CORS_ALLOWED_ORIGINS = [
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:4200',
+    'http://127.0.0.1:4200',
 ]
 
 REST_FRAMEWORK = {
