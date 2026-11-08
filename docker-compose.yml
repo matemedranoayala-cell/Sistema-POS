@@ -1,22 +1,4 @@
 ﻿services:
-  db:
-    image: postgres:16-alpine
-    container_name: kombat_postgres
-    restart: always
-    environment:
-      POSTGRES_DB: kombat_manager
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5433:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d kombat_manager"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   backend:
     build: ./backend
     container_name: kombat_backend
@@ -27,13 +9,12 @@
       POSTGRES_DB: kombat_manager
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_HOST: db
+      POSTGRES_HOST: host.docker.internal
       POSTGRES_PORT: 5432
-    depends_on:
-      db:
-        condition: service_healthy
     volumes:
       - ./backend:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   frontend:
     build: ./frontend
@@ -43,6 +24,3 @@
       - "4200:4200"
     depends_on:
       - backend
-
-volumes:
-  postgres_data:
