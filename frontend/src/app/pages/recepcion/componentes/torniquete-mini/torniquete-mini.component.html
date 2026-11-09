@@ -1,65 +1,107 @@
-<div class="contenedor-torniquete">
-  <h3 class="titulo-torniquete">Control de Acceso y Torniquete</h3>
+<div style="background: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #e5e7eb; max-width: 1000px; margin: 0 auto;">
+  <h2 style="margin: 0 0 16px 0; font-size: 18px; color: #111827;">Control de Acceso y Torniquete</h2>
 
-  <div class="barra-busqueda">
-    <div class="input-con-icono">
-      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icono-buscar">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+  <div style="display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;">
+    <button type="button"
+            (click)="seleccionarFiltro('dni')"
+            [style.background]="criterioFiltro === 'dni' ? '#111827' : '#f3f4f6'"
+            [style.color]="criterioFiltro === 'dni' ? '#ffffff' : '#374151'"
+            [style.border]="criterioFiltro === 'dni' ? '2px solid #111827' : '1px solid #d1d5db'"
+            style="padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s;">
+      Filtrar por DNI
+    </button>
+
+    <button type="button"
+            (click)="seleccionarFiltro('nombre')"
+            [style.background]="criterioFiltro === 'nombre' ? '#111827' : '#f3f4f6'"
+            [style.color]="criterioFiltro === 'nombre' ? '#ffffff' : '#374151'"
+            [style.border]="criterioFiltro === 'nombre' ? '2px solid #111827' : '1px solid #d1d5db'"
+            style="padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s;">
+      Filtrar por Nombre
+    </button>
+
+    <button type="button"
+            (click)="seleccionarFiltro('vencerse')"
+            [style.background]="criterioFiltro === 'vencerse' ? '#dc2626' : '#fef2f2'"
+            [style.color]="criterioFiltro === 'vencerse' ? '#ffffff' : '#dc2626'"
+            [style.border]="criterioFiltro === 'vencerse' ? '2px solid #dc2626' : '1px solid #fecaca'"
+            style="padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s;">
+      Próximos a Vencer (≤ 2 clases)
+    </button>
+  </div>
+
+  <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+    <div style="position: relative; flex: 1;">
+      <svg style="position: absolute; left: 12px; top: 12px; width: 18px; height: 18px; color: #9ca3af;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
       </svg>
-      <input
-        type="text"
-        placeholder="Escanear credencial o buscar por CI o nombre..."
-        [(ngModel)]="busqueda"
-        (keyup.enter)="marcarIngreso()">
+      <input type="text"
+             [(ngModel)]="terminoBusqueda"
+             (ngModelChange)="ejecutarFiltro()"
+             (keyup.enter)="marcarIngreso()"
+             [disabled]="!criterioFiltro"
+             [placeholder]="obtenerPlaceholder()"
+             [style.background]="!criterioFiltro ? '#f9fafb' : '#ffffff'"
+             style="width: 100%; padding: 10px 16px 10px 38px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box;">
     </div>
-    <button type="button" class="boton-ingreso" (click)="marcarIngreso()">
+    <button type="button"
+            (click)="marcarIngreso()"
+            [disabled]="!criterioFiltro || !terminoBusqueda.trim()"
+            [style.opacity]="(!criterioFiltro || !terminoBusqueda.trim()) ? '0.5' : '1'"
+            style="background: #111827; color: white; border: none; padding: 0 24px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;">
       Marcar Ingreso
     </button>
   </div>
 
-  <div class="lista-registros">
-    <div class="registro-fila" *ngFor="let reg of registrosFiltrados">
-      <div class="col-hora" style="display: inline-flex; align-items: center; gap: 6px;">
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16" style="color: #64748b;">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        {{ reg.hora }}
-      </div>
-      <div class="separador-vertical"></div>
-      <div class="col-datos">
-        <span class="nombre-atleta">{{ reg.nombre }}</span>
-        <span class="plan-id">CI: {{ reg.dni || 'S/N' }} | Plan ID: {{ reg.plan }}</span>
-      </div>
-      <div class="col-academia">{{ reg.academia }}</div>
-      <div class="col-estado">
-        <span class="etiqueta-permitido">{{ reg.estado }}</span>
-      </div>
-      <div class="col-accion">
-        <button type="button" class="boton-perfil" (click)="verPerfil(reg)">
-          Ver Perfil
-        </button>
-      </div>
-    </div>
+  <h3 style="font-size: 14px; color: #6b7280; font-weight: 600; margin-bottom: 12px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">
+    {{ busquedaActiva ? 'Resultados del Filtro (' + asistenciasMostradas.length + ')' : 'Últimos 3 Alumnos Recientes' }}
+  </h3>
 
-    <div
-      *ngIf="registrosFiltrados.length === 0"
-      style="padding: 20px; text-align: center; color: #64748b; font-size: 0.9rem;">
-      No se encontraron atletas con "{{ busqueda }}".
-    </div>
+  <div *ngIf="asistenciasMostradas.length === 0" style="text-align: center; padding: 32px 0; color: #6b7280; font-size: 14px;">
+    No se encontraron atletas{{ terminoBusqueda ? ' con "' + terminoBusqueda + '"' : '' }}.
   </div>
 
-  <div
-    class="pie-torniquete"
-    style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #f1f5f9; display: flex; justify-content: center;">
-    <button
-      type="button"
-      class="boton-historial"
-      (click)="verHistorialCompleto()"
-      style="display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 10px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer;">
-      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+  <div *ngFor="let ingreso of asistenciasMostradas"
+       style="display: flex; align-items: center; padding: 16px 0; border-bottom: 1px solid #f3f4f6;">
+
+    <span style="width: 100px; color: #6b7280; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+      <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
-      Ver todo el control de acceso
-    </button>
+      {{ ingreso.fecha_hora | date:'shortTime' }}
+    </span>
+
+    <div style="flex: 1; padding-left: 16px; border-left: 2px solid #2563eb;">
+      <h4 style="margin: 0 0 4px 0; font-size: 15px; color: #111827; font-weight: 700;">{{ ingreso.nombre }}</h4>
+      <p style="margin: 0; font-size: 13px; color: #6b7280;">
+        CI: {{ ingreso.dni }} | Plan ID: {{ ingreso.plan }}
+        <strong *ngIf="ingreso.clases_restantes <= 2" style="color: #ef4444; margin-left: 8px;">
+          (Suscripción por agotarse: {{ ingreso.clases_restantes }} clases)
+        </strong>
+      </p>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px; margin-right: 16px;">
+      <span style="color: #6b7280; font-size: 14px;">{{ ingreso.academia }} (Local)</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span [style.background]="ingreso.estado === 'Permitido' ? '#3b82f6' : '#ef4444'"
+            style="color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">
+        {{ ingreso.estado }}
+      </span>
+
+      <button type="button"
+              *ngIf="ingreso.clases_restantes <= 2"
+              (click)="enviarRecordatorioRenovacion(ingreso)"
+              style="background: #22c55e; color: #ffffff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+        📲 Avisar WhatsApp
+      </button>
+
+      <button type="button"
+              style="background: white; border: 1px solid #d1d5db; padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; color: #374151;">
+        Ver Perfil
+      </button>
+    </div>
   </div>
 </div>

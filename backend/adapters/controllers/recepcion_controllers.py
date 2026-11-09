@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework.response import Response
 from rest_framework import status
 from adapters.controllers.base_controller import BaseCleanController
@@ -9,11 +10,17 @@ from infrastructure.django_apps.core_db.models import (
     Bitacora,
 )
 
+CLASES_POR_PLAN = {1: 8, 2: 12, 3: 16, 4: 999, 5: 1, 6: 999}
 
 class AlumnoController(BaseCleanController):
     model = Alumno
 
     def post(self, request):
+        datos = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
+        plan_id_val = int(datos.get('plan_id')) if datos.get('plan_id') and str(datos.get('plan_id')).isdigit() else 1
+        datos['clases_restantes'] = CLASES_POR_PLAN.get(plan_id_val, 8)
+        request._full_data = datos
+
         res = super().post(request)
         if res.status_code == status.HTTP_201_CREATED and res.data.get('id'):
             Asistencia.objects.create(
@@ -21,7 +28,6 @@ class AlumnoController(BaseCleanController):
                 estado_acceso='Permitido'
             )
         return res
-
 
 class PagoController(BaseCleanController):
     model = Pago
@@ -51,8 +57,9 @@ class PagoController(BaseCleanController):
             )
 
         alumno_obj.estado = 'Activo'
-        if plan_id and str(plan_id).isdigit():
-            alumno_obj.plan_id = int(plan_id)
+        plan_id_val = int(plan_id) if plan_id and str(plan_id).isdigit() else (alumno_obj.plan_id or 1)
+        alumno_obj.plan_id = plan_id_val
+        alumno_obj.clases_restantes = CLASES_POR_PLAN.get(plan_id_val, 8)
         alumno_obj.save()
 
         nuevo_pago = Pago.objects.create(
@@ -79,7 +86,6 @@ class PagoController(BaseCleanController):
             status=status.HTTP_201_CREATED
         )
 
-
 class AsistenciaController(BaseCleanController):
     model = Asistencia
 
@@ -94,6 +100,8 @@ class AsistenciaController(BaseCleanController):
                 item['dni'] = a.alumno.dni or ''
                 item['plan'] = a.alumno.plan_id or 1
                 item['academia'] = a.alumno.academia_origen or 'Kombat'
+                item['clases_restantes'] = a.alumno.clases_restantes
+                item['telefono'] = a.alumno.telefono or ''
             item['estado'] = a.estado_acceso
             res.append(item)
         return Response(res, status=status.HTTP_200_OK)
@@ -101,7 +109,7 @@ class AsistenciaController(BaseCleanController):
     def post(self, request):
         aid = request.data.get('alumno') or request.data.get('alumno_id')
         dni = str(request.data.get('dni', '')).strip()
-        est = request.data.get('estado_acceso', 'Permitido')
+        nombre = str(request.data.get('nombre', '')).strip()
 
         alumno_obj = None
         if aid and str(aid).isdigit():
@@ -111,12 +119,23 @@ class AsistenciaController(BaseCleanController):
                     Alumno.objects.filter(dni__iexact=dni).first()
                     or Alumno.objects.filter(dni__icontains=dni).first()
             )
+        if not alumno_obj and nombre:
+            alumno_obj = Alumno.objects.filter(
+                Q(nombre__icontains=nombre) | Q(apellidos__icontains=nombre)
+            ).first()
 
         if not alumno_obj:
             return Response(
                 {'error': 'Alumno no encontrado'},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+        if alumno_obj.clases_restantes > 0:
+            est = 'Permitido'
+            alumno_obj.clases_restantes -= 1
+            alumno_obj.save()
+        else:
+            est = 'Denegado - Sin clases'
 
         nuevo = Asistencia.objects.create(
             alumno_id=alumno_obj.id,
@@ -128,5 +147,7 @@ class AsistenciaController(BaseCleanController):
         item['dni'] = alumno_obj.dni or ''
         item['plan'] = alumno_obj.plan_id or 1
         item['academia'] = alumno_obj.academia_origen or 'Kombat'
+        item['clases_restantes'] = alumno_obj.clases_restantes
+        item['telefono'] = alumno_obj.telefono or ''
         item['estado'] = nuevo.estado_acceso
         return Response(item, status=status.HTTP_201_CREATED)

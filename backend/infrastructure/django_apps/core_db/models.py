@@ -36,6 +36,7 @@ class Alumno(models.Model):
     asociacion = models.CharField(max_length=150, blank=True, null=True)
     fecha_inscripcion = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=20, default='Activo')
+    clases_restantes = models.IntegerField(default=0)
 
     class Meta:
         db_table = 'api_alumno'
