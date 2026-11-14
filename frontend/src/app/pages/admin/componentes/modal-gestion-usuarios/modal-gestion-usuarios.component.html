@@ -24,7 +24,7 @@
             <small style="color:#6b7280; font-size:0.75rem;">{{ user.area }}</small>
           </td>
           <td style="padding: 12px 8px;">
-              <span [ngStyle]="{'color': user.rol === 'ADMIN' ? '#d97706' : (user.rol === 'RECEPCION' ? '#2563eb' : '#059669')}" style="font-size: 0.75rem; font-weight: bold; background: #f3f4f6; padding: 4px 8px; border-radius: 4px; border: 1px solid #e5e7eb;">
+              <span [ngStyle]="{'color': user.rol === 'ADMIN' ? '#d97706' : (user.rol === 'TIENDA' ? '#15803d' : (user.rol === 'RECEPCION' ? '#2563eb' : '#059669'))}" style="font-size: 0.75rem; font-weight: bold; background: #f3f4f6; padding: 4px 8px; border-radius: 4px; border: 1px solid #e5e7eb;">
                 {{ user.rol }}
               </span>
           </td>

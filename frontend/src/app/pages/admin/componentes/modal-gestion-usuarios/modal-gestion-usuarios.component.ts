@@ -34,7 +34,7 @@ export class ModalGestionUsuariosComponent implements OnInit {
           username: u.username || u.nombre,
           rol: (u.rol || 'RECEPCION').toUpperCase(),
           activo: u.activo !== undefined ? u.activo : true,
-          area: u.area || ((u.rol || '').toUpperCase() === 'COACH' ? 'Área de Tatami' : ((u.rol || '').toUpperCase() === 'ADMIN' ? 'Administración' : 'Recepción / Caja'))
+          area: u.area || ((u.rol || '').toUpperCase() === 'COACH' ? 'Área de Tatami' : ((u.rol || '').toUpperCase() === 'TIENDA' ? 'Tienda' : ((u.rol || '').toUpperCase() === 'ADMIN' ? 'Administración' : 'Recepción / Caja')))
         }));
         if (usuariosBD.length <= 3) {
           const adicionales = this.obtenerUsuariosRespaldo().filter(
@@ -137,6 +137,7 @@ export class ModalGestionUsuariosComponent implements OnInit {
             <select id="swal-rol" class="swal2-input" style="margin: 6px 0 0 0; width: 100%; font-size: 0.95rem;">
               <option value="RECEPCION" ${usuario.rol === 'RECEPCION' ? 'selected' : ''}>RECEPCION (Recepción / Caja)</option>
               <option value="COACH" ${usuario.rol === 'COACH' ? 'selected' : ''}>COACH (Área de Tatami)</option>
+              <option value="TIENDA" ${usuario.rol === 'TIENDA' ? 'selected' : ''}>TIENDA (Tienda)</option>
             </select>
           </div>
         </div>
@@ -159,7 +160,7 @@ export class ModalGestionUsuariosComponent implements OnInit {
         const datosActualizados = {
           username: result.value.username,
           rol: result.value.rol,
-          area: result.value.rol === 'COACH' ? 'Área de Tatami' : 'Recepción / Caja'
+          area: result.value.rol === 'COACH' ? 'Área de Tatami' : (result.value.rol === 'TIENDA' ? 'Tienda' : 'Recepción / Caja')
         };
 
         this.http.patch(`http://127.0.0.1:8000/api/personal/${usuario.id}/`, datosActualizados).subscribe({
