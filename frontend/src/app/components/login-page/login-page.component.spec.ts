@@ -34,6 +34,7 @@ describe('LoginPageComponent role routing', () => {
     ['recepcionista', '/recepcion'],
     ['coach', '/coach'],
     ['entrenador', '/coach'],
+    ['tienda', '/tienda'],
     ['encargado_tienda', '/tienda']
   ].forEach(([rol, ruta]) => {
     it(`routes ${rol} to ${ruta}`, async () => {

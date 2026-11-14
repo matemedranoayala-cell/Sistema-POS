@@ -9,6 +9,8 @@ class DjangoUsuarioRepository:
         rol_str = str(rol_bruto or 'RECEPCION').upper().strip()
         if 'ADMIN' in rol_str or 'SUPER' in rol_str or 'ENCARGADO_GENERAL' in rol_str:
             return 'ADMIN'
+        if 'TIENDA' in rol_str or 'KIOSKO' in rol_str:
+            return 'TIENDA'
         if 'COACH' in rol_str or 'ENTRENADOR' in rol_str or 'TATAMI' in rol_str:
             return 'COACH'
         return 'RECEPCION'
@@ -16,6 +18,8 @@ class DjangoUsuarioRepository:
     def obtener_area(self, rol_limpio):
         if rol_limpio == 'ADMIN':
             return 'Administración'
+        if rol_limpio == 'TIENDA':
+            return 'Tienda'
         if rol_limpio == 'COACH':
             return 'Área de Tatami'
         return 'Recepción / Caja'

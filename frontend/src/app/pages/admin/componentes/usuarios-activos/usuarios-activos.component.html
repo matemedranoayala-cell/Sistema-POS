@@ -24,14 +24,14 @@
           {{ user.username || user.nombre }}
         </strong>
         <span style="color: #64748b; font-size: 0.8rem;">
-          {{ user.area || (user.rol === 'COACH' ? 'Área de Tatami' : 'Recepción / Caja') }}
+          {{ user.area || (user.rol === 'COACH' ? 'Área de Tatami' : (user.rol === 'TIENDA' ? 'Tienda' : 'Recepción / Caja')) }}
         </span>
       </div>
       <div class="estado-usuario" style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
         <span
           [ngStyle]="{
-            'background': user.rol === 'RECEPCION' ? '#fef3c7' : (user.rol === 'COACH' ? '#dbeafe' : '#f1f5f9'),
-            'color': user.rol === 'RECEPCION' ? '#b45309' : (user.rol === 'COACH' ? '#1d4ed8' : '#64748b')
+            'background': user.rol === 'TIENDA' ? '#dcfce7' : (user.rol === 'RECEPCION' ? '#fef3c7' : (user.rol === 'COACH' ? '#dbeafe' : '#f1f5f9')),
+            'color': user.rol === 'TIENDA' ? '#15803d' : (user.rol === 'RECEPCION' ? '#b45309' : (user.rol === 'COACH' ? '#1d4ed8' : '#64748b'))
           }"
           style="font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">
           {{ user.rol }}

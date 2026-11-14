@@ -26,7 +26,7 @@ export class UsuariosActivosComponent implements OnInit {
           const r = String(u.rol || 'RECEPCION').toUpperCase();
           const rolLimpio = r.includes('ADMIN') || r.includes('SUPER')
             ? 'ADMIN'
-            : (r.includes('COACH') ? 'COACH' : 'RECEPCION');
+            : (r.includes('TIENDA') ? 'TIENDA' : (r.includes('COACH') ? 'COACH' : 'RECEPCION'));
           return {
             ...u,
             rol: rolLimpio

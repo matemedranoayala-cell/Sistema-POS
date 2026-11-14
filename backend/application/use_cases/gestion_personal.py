@@ -14,7 +14,9 @@ class CrearPersonalUseCase:
             return {"success": False, "error": "Ingresa el usuario y la contraseña"}
 
         rol_str = str(rol or 'COACH').upper()
-        if 'RECEPCION' in rol_str:
+        if 'TIENDA' in rol_str:
+            rol_final = 'TIENDA'
+        elif 'RECEPCION' in rol_str:
             rol_final = 'RECEPCION'
         elif 'ADMIN' in rol_str:
             rol_final = 'ADMIN'
