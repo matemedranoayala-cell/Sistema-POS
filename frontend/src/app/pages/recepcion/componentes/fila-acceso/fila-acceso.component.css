@@ -1,0 +1,131 @@
+.registro-fila {
+  display: flex;
+  align-items: center;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid #f3f4f6;
+  gap: 1.5rem;
+}
+
+:host:last-child .registro-fila {
+  border-bottom: none;
+}
+
+.col-hora {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.95rem;
+  color: #4b5563;
+  width: 90px;
+}
+
+.icono-hora {
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.separador-vertical {
+  width: 3px;
+  height: 35px;
+  background-color: #3b82f6;
+  border-radius: 2px;
+}
+
+.separador-vertical.vencida {
+  background-color: #f59e0b;
+}
+
+.col-datos {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.nombre-atleta {
+  font-weight: 700;
+  color: #111827;
+  font-size: 0.95rem;
+}
+
+.plan-id {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.col-academia {
+  font-size: 0.95rem;
+  color: #4b5563;
+  width: 150px;
+}
+
+.col-estado {
+  width: 100px;
+}
+
+.etiqueta {
+  display: inline-block;
+  padding: 0.35rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.etiqueta.permitido {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.etiqueta.vigente {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.etiqueta.vencida {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.col-accion {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.boton-perfil {
+  background-color: transparent;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  color: #374151;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.boton-perfil:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.boton-ingreso {
+  background-color: #111827;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.boton-ingreso:hover:not(:disabled) {
+  background-color: #1f2937;
+}
+
+.boton-ingreso:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

@@ -1,0 +1,35 @@
+<div class="selector-criterio" role="tablist" aria-label="Buscar por">
+  <button
+    type="button"
+    role="tab"
+    [attr.aria-selected]="criterio === 'ci'"
+    [class.activo]="criterio === 'ci'"
+    (click)="seleccionarCriterio('ci')">
+    Por CI
+  </button>
+  <button
+    type="button"
+    role="tab"
+    [attr.aria-selected]="criterio === 'nombre'"
+    [class.activo]="criterio === 'nombre'"
+    (click)="seleccionarCriterio('nombre')">
+    Por nombre
+  </button>
+</div>
+
+<div class="barra-busqueda">
+  <div class="input-con-icono">
+    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icono-buscar">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+    </svg>
+    <input
+      type="text"
+      [placeholder]="placeholder"
+      [(ngModel)]="termino"
+      autocomplete="off"
+      (keyup.enter)="enviar()">
+  </div>
+  <button type="button" class="boton-buscar" [disabled]="buscando" (click)="enviar()">
+    {{ buscando ? 'Buscando...' : 'Buscar' }}
+  </button>
+</div>

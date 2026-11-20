@@ -14,7 +14,7 @@ export class AppComponent {
     if (sesion) {
       const datos = JSON.parse(sesion);
       const url = 'http://127.0.0.1:8000/api/logout/';
-      const data = JSON.stringify({ username: datos.usuario });
+      const data = JSON.stringify({ username: datos.username || datos.usuario || 'anonimo' });
       navigator.sendBeacon(url, new Blob([data], { type: 'application/json' }));
     }
   }

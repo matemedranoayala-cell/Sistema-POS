@@ -23,6 +23,7 @@ export class AlumnoService {
       email: datos.email || '',
       disciplina_id: datos.disciplina || datos.disciplina_id || 'MMA',
       plan_id: Number(datos.plan || datos.plan_id || 1),
+      metodo_pago: datos.metodoPago || datos.metodo_pago || 'Efectivo',
       es_competidor: Boolean(datos.esCompetidor || datos.es_competidor),
       academia_origen: datos.academiaOrigen || datos.academia_origen || 'Kombat',
       asociacion: datos.asociacion || '',

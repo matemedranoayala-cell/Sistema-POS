@@ -1,7 +1,13 @@
 import uuid
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
+from django.db.models import Case, CharField, Func, IntegerField, Max, Q, Value, When
+from django.db import transaction
+from application.interfaces.repositories import IAlumnoRepository, IInscripcionRepository
+from core.entities.alumno import Alumno as AlumnoEntidad
 from infrastructure.django_apps.core_db.models import Usuario, Empleado, Bitacora
+from infrastructure.django_apps.core_db.models import Alumno as AlumnoModelo
+from infrastructure.django_apps.core_db.models import Asistencia, Pago, Venta
 
 
 class DjangoUsuarioRepository:
@@ -191,3 +197,107 @@ class DjangoUsuarioRepository:
             return {'success': True}
 
         return {'success': False, 'error': 'No se encontro el usuario'}
+
+_CON_TILDE = "áéíóúü"
+_SIN_TILDE = "aeiouu"
+
+
+class _SinTildes(Func):
+    """LOWER + quita tildes en PostgreSQL, para comparar 'López' con 'lopez'."""
+    template = f"TRANSLATE(LOWER(COALESCE(%(expressions)s, '')), '{_CON_TILDE}', '{_SIN_TILDE}')"
+    output_field = CharField()
+
+
+def _quitar_tildes(texto: str) -> str:
+    return texto.lower().translate(str.maketrans(_CON_TILDE, _SIN_TILDE))
+
+
+class DjangoAlumnoRepository(IAlumnoRepository):
+    def _base(self):
+        return AlumnoModelo.objects.annotate(
+            vencimiento=Max("pago__proximo_vencimiento")
+        )
+
+    def _a_entidad(self, a) -> AlumnoEntidad:
+        return AlumnoEntidad(
+            id=a.id,
+            nombre=str(a.nombre or "").strip(),
+            apellidos=str(a.apellidos or "").strip(),
+            dni=str(a.dni or "").strip(),
+            plan_id=a.plan_id,
+            academia=a.academia_origen or "Kombat",
+            estado=a.estado or "Activo",
+            vencimiento_membresia=a.vencimiento,
+        )
+
+    def buscar_por_ci(self, ci, limite):
+        qs = (
+            self._base()
+            .filter(dni__icontains=ci)
+            .annotate(
+                exacto=Case(
+                    When(dni__iexact=ci, then=Value(0)),
+                    default=Value(1),
+                    output_field=IntegerField(),
+                )
+            )
+            .order_by("exacto", "dni")[:limite]
+        )
+        return [self._a_entidad(a) for a in qs]
+
+    def buscar_por_nombre(self, palabras, limite):
+        filtro = Q()
+        for palabra in palabras:
+            limpia = _quitar_tildes(palabra)
+            filtro &= Q(nombre_sin_tildes__contains=limpia) | Q(apellidos_sin_tildes__contains=limpia)
+        qs = (
+            self._base()
+            .annotate(
+                nombre_sin_tildes=_SinTildes("nombre"),
+                apellidos_sin_tildes=_SinTildes("apellidos"),
+            )
+            .filter(filtro)
+            .order_by("nombre", "apellidos")[:limite]
+        )
+        return [self._a_entidad(a) for a in qs]
+
+
+class DjangoInscripcionRepository(IInscripcionRepository):
+    def existe_alumno_con_ci(self, ci):
+        return AlumnoModelo.objects.filter(dni__iexact=ci.strip()).exists()
+
+    @transaction.atomic
+    def inscribir_con_pago(self, datos_alumno, monto, metodo_pago, proximo_vencimiento, usuario):
+        alumno = AlumnoModelo.objects.create(estado="Activo", **datos_alumno)
+        pago = Pago.objects.create(
+            alumno=alumno,
+            monto=monto,
+            metodo_pago=metodo_pago,
+            proximo_vencimiento=proximo_vencimiento,
+        )
+        # Igual que en las renovaciones: el cobro aparece en Caja y Ventas.
+        Venta.objects.create(total=monto, metodo_pago=metodo_pago)
+        # La inscripción cuenta como primer ingreso del día (comportamiento previo).
+        Asistencia.objects.create(alumno=alumno, estado_acceso="Permitido")
+
+        nombre = f"{alumno.nombre} {alumno.apellidos or ''}".strip()
+        Bitacora.objects.create(
+            usuario=usuario,
+            operacion="Pago de Inscripcion (RECEPCION)",
+            modulo="Caja / Recepcion",
+            detalle=(
+                f"Inscripción de {nombre} (CI: {alumno.dni}) Bs {monto} - "
+                f"{metodo_pago} - vence {proximo_vencimiento.isoformat()}"
+            ),
+            estado="Registrado",
+            color="green",
+        )
+        return {
+            "id": alumno.id,
+            "nombre": nombre,
+            "dni": alumno.dni,
+            "plan_id": alumno.plan_id,
+            "monto": float(monto),
+            "metodo_pago": metodo_pago,
+            "proximo_vencimiento": pago.proximo_vencimiento.isoformat(),
+        }

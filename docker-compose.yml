@@ -1,0 +1,26 @@
+﻿services:
+  backend:
+    build: ./backend
+    container_name: kombat_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      POSTGRES_DB: kombat_manager
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: host.docker.internal
+      POSTGRES_PORT: 5432
+    volumes:
+      - ./backend:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build: ./frontend
+    container_name: kombat_frontend
+    restart: always
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend

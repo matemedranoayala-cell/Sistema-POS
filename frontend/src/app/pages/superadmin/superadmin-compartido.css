@@ -1,0 +1,31 @@
+/* Estilos compartidos por los componentes del panel Superadmin. */
+.list-container { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.list-container h2 { margin: 0 0 6px 0; font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+.subtext { font-size: 13px; color: #6b7280; margin: 0 0 20px 0; }
+.encabezado { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.contador { font-size: 12px; font-weight: 700; color: #4b5563; background: #f3f4f6; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.contador.alerta { background: #fef3c7; color: #b45309; }
+.role-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; background: #f3f4f6; color: #4b5563; border-radius: 4px; text-transform: uppercase; }
+.estado-vacio { font-size: 13px; color: #6b7280; margin: 8px 0; }
+.estado-vacio.error { color: #b91c1c; }
+
+.btn-principal, .btn-secundario, .btn-peligro { padding: 7px 14px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.btn-principal { background: #111827; color: #ffffff; border: 1px solid #111827; }
+.btn-principal:hover:not(:disabled) { background: #1f2937; }
+.btn-secundario { background: #ffffff; color: #111827; border: 1px solid #d1d5db; }
+.btn-secundario:hover:not(:disabled) { background: #f3f4f6; }
+.btn-peligro { background: #ffffff; color: #b91c1c; border: 1px solid #fca5a5; }
+.btn-peligro:hover:not(:disabled) { background: #fef2f2; }
+.btn-principal:disabled, .btn-secundario:disabled, .btn-peligro:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn-enlace { background: none; border: none; padding: 0; color: #2563eb; font-weight: 600; cursor: pointer; font-family: inherit; font-size: inherit; }
+
+.fondo-modal { position: fixed; inset: 0; background: rgba(17, 24, 39, 0.55); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 1000; }
+.panel-modal { background: #ffffff; border-radius: 14px; width: 100%; max-width: 460px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35); }
+.modal-encabezado { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.modal-encabezado h2 { margin: 0; font-size: 18px; font-weight: 700; }
+.btn-cerrar { background: none; border: none; font-size: 24px; line-height: 1; color: #6b7280; cursor: pointer; }
+.modal-texto { font-size: 14px; color: #4b5563; line-height: 1.5; margin: 0 0 16px 0; }
+.modal-acciones { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+.campo { display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: #374151; }
+.campo input, .campo textarea { padding: 9px 11px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-family: inherit; }
+.campo input:focus, .campo textarea:focus { outline: none; border-color: #111827; }

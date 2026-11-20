@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
@@ -12,6 +12,7 @@ import { ProductoService } from '../../../../services/producto.service';
   templateUrl: './modal-crear-producto.component.html'
 })
 export class ModalCrearProductoComponent {
+  @Input() skusExistentes: string[] = [];
   @Output() cerrar = new EventEmitter<void>();
   @Output() productoCreado = new EventEmitter<void>();
 
@@ -31,8 +32,12 @@ export class ModalCrearProductoComponent {
 
   generarSkuAutomatico(): string {
     const prefijo = this.producto.categoria.slice(0, 3).toUpperCase();
-    const aleatorio = Math.floor(1000 + Math.random() * 9000);
-    return `${prefijo}-${aleatorio}`;
+    const usados = new Set(this.skusExistentes);
+    let sku = '';
+    do {
+      sku = `${prefijo}-${Math.floor(1000 + Math.random() * 9000)}`;
+    } while (usados.has(sku));
+    return sku;
   }
 
   guardarProducto() {
@@ -50,8 +55,14 @@ export class ModalCrearProductoComponent {
       return;
     }
 
+    const skuEscrito = this.producto.sku.trim().toUpperCase();
+    if (skuEscrito && this.skusExistentes.includes(skuEscrito)) {
+      this.toastr.warning(`Ya existe un producto con el SKU ${skuEscrito}. Usa otro o déjalo vacío para generarlo.`, 'SKU Repetido');
+      return;
+    }
+
     this.guardando = true;
-    const skuFinal = this.producto.sku.trim() ? this.producto.sku.trim().toUpperCase() : this.generarSkuAutomatico();
+    const skuFinal = skuEscrito || this.generarSkuAutomatico();
 
     const payload = {
       nombre: nombreLimpio,

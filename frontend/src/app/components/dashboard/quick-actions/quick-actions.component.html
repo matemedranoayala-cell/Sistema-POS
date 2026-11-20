@@ -140,9 +140,9 @@
             <label>Producto</label>
             <select name="producto" [(ngModel)]="ventaData.producto" required>
               <option value="" disabled>Seleccionar...</option>
-              <option value="agua">Botella de Agua 500ml</option>
-              <option value="venda">Vendas 4mts</option>
-              <option value="guantes">Guantes MMA 4oz</option>
+              <option *ngFor="let producto of productos" [ngValue]="producto.id">
+                {{ producto.nombre }} (Bs {{ producto.precio }})
+              </option>
             </select>
           </div>
           <div class="input-group">

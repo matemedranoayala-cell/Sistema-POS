@@ -1,0 +1,64 @@
+<div class="list-container">
+  <div class="encabezado">
+    <div>
+      <h2>Revisión de Arqueos de Caja</h2>
+      <p class="subtext">Verifica cada cierre o márcalo como observado si algo no cuadra.</p>
+    </div>
+    <span class="contador" [class.alerta]="pendientes.length > 0">
+      {{ pendientes.length }} pendiente{{ pendientes.length === 1 ? '' : 's' }}
+    </span>
+  </div>
+
+  <label class="toggle">
+    <input type="checkbox" [(ngModel)]="verRevisados">
+    Mostrar también los ya revisados
+  </label>
+
+  <p class="estado-vacio" *ngIf="cargando && arqueos.length === 0">Cargando arqueos...</p>
+  <p class="estado-vacio error" *ngIf="errorCarga">
+    No se pudieron cargar los arqueos.
+    <button type="button" class="btn-enlace" (click)="cargar()">Reintentar</button>
+  </p>
+  <p class="estado-vacio" *ngIf="!cargando && !errorCarga && visibles.length === 0">
+    {{ verRevisados ? 'Todavía no hay arqueos registrados.' : 'No hay arqueos pendientes de revisión.' }}
+  </p>
+
+  <div class="lista-arqueos">
+    <div class="arqueo" *ngFor="let arqueo of visibles" [ngClass]="'estado-' + arqueo.estado.toLowerCase()">
+      <div class="arqueo-fila">
+        <div class="arqueo-datos">
+          <strong>Arqueo #{{ arqueo.id }} · Bs {{ arqueo.total_ingresos | number:'1.2-2' }}</strong>
+          <span class="arqueo-fecha">{{ arqueo.fecha }} {{ arqueo.hora }}</span>
+        </div>
+        <div class="arqueo-etiquetas">
+          <span class="dif" *ngIf="diferencia(arqueo) as dif" [ngClass]="dif.color">{{ dif.texto }}</span>
+          <span class="estado-tag">{{ arqueo.estado }}</span>
+        </div>
+      </div>
+
+      <p class="arqueo-obs" *ngIf="arqueo.observaciones">{{ arqueo.observaciones }}</p>
+
+      <ng-container *ngIf="arqueo.estado === 'Pendiente'">
+        <div class="arqueo-acciones" *ngIf="observandoId !== arqueo.id">
+          <button type="button" class="btn-peligro" [disabled]="revisandoId !== null" (click)="iniciarObservacion(arqueo)">Observar</button>
+          <button type="button" class="btn-principal" [disabled]="revisandoId !== null" (click)="revisar(arqueo, 'Verificado')">
+            {{ revisandoId === arqueo.id ? 'Guardando...' : 'Verificar' }}
+          </button>
+        </div>
+
+        <div class="observacion" *ngIf="observandoId === arqueo.id">
+          <label class="campo">
+            <span>¿Qué no cuadra?</span>
+            <textarea rows="2" [(ngModel)]="nota" placeholder="Ej. Faltan Bs 20, revisar con el encargado de turno"></textarea>
+          </label>
+          <div class="arqueo-acciones">
+            <button type="button" class="btn-secundario" [disabled]="revisandoId !== null" (click)="cancelarObservacion()">Cancelar</button>
+            <button type="button" class="btn-peligro" [disabled]="revisandoId !== null" (click)="revisar(arqueo, 'Observado')">
+              {{ revisandoId === arqueo.id ? 'Guardando...' : 'Guardar observación' }}
+            </button>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

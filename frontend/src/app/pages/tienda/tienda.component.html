@@ -107,6 +107,7 @@
 
 <app-modal-crear-producto
   *ngIf="mostrarModalCrearProducto"
+  [skusExistentes]="skusExistentes"
   (cerrar)="cerrarModales()"
   (productoCreado)="cargarDatos()">
 </app-modal-crear-producto>
@@ -131,6 +132,7 @@
 <app-modal-arqueo-tienda
   *ngIf="mostrarModalArqueo"
   [ventasTurno]="ventasTurno"
+  [guardando]="guardandoArqueo"
   (cerrar)="cerrarModales()"
   (confirmarArqueo)="procesarArqueo($event)">
 </app-modal-arqueo-tienda>

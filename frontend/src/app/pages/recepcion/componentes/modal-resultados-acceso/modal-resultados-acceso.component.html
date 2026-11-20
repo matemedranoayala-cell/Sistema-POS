@@ -1,0 +1,40 @@
+<div class="fondo-modal" (click)="cerrar.emit()">
+  <div
+    class="tarjeta-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="titulo-resultados-acceso"
+    (click)="$event.stopPropagation()">
+
+    <div class="cabecera-modal">
+      <div>
+        <h2 id="titulo-resultados-acceso">Resultados de la búsqueda</h2>
+        <p class="subtitulo">
+          {{ resultados.length }} coincidencia{{ resultados.length === 1 ? '' : 's' }}
+          por {{ criterio === 'ci' ? 'CI' : 'nombre' }} "{{ termino }}"
+        </p>
+      </div>
+      <button type="button" class="boton-cerrar" aria-label="Cerrar" (click)="cerrar.emit()">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="cuerpo-modal">
+      <app-fila-acceso
+        *ngFor="let fila of resultados"
+        [fila]="fila"
+        [permitirIngreso]="true"
+        [procesando]="registrandoId === fila.alumnoId"
+        [deshabilitado]="registrandoId !== null"
+        (marcarIngreso)="marcarIngreso.emit($event)"
+        (verPerfil)="verPerfil.emit($event)">
+      </app-fila-acceso>
+    </div>
+
+    <div class="pie-modal">
+      <button type="button" class="boton-secundario" (click)="cerrar.emit()">Cerrar</button>
+    </div>
+  </div>
+</div>

@@ -1,16 +1,29 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { AlumnoService } from '../../../services/alumno.service';
+import { RenovacionService } from '../../../services/renovacion.service';
+import { ProductoService } from '../../../services/producto.service';
+import { VentaProductoService } from '../../../services/venta-producto.service';
+import { CierreCajaService } from '../../../services/cierre-caja.service';
+import { BusquedaAlumnosService } from '../../../services/busqueda-alumnos.service';
+import { inject } from '@angular/core';
 
 @Component({
   selector: 'app-quick-actions',
   standalone: true,
-  imports: [CommonModule, HttpClientModule, FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './quick-actions.component.html',
   styleUrls: ['./quick-actions.component.css']
 })
-export class QuickActionsComponent {
+export class QuickActionsComponent implements OnInit {
+  private alumnoService = inject(AlumnoService);
+  private renovacionService = inject(RenovacionService);
+  private productoService = inject(ProductoService);
+  private ventaProductoService = inject(VentaProductoService);
+  private cierreCajaService = inject(CierreCajaService);
+  private busquedaAlumnosService = inject(BusquedaAlumnosService);
+
   showInscripcionModal = false;
   showRenovacionModal = false;
   showVentaModal = false;
@@ -18,12 +31,17 @@ export class QuickActionsComponent {
 
   inscripcionData = { nombres: '', ci: '', telefono: '', fechaNacimiento: '', disciplina: '', duracion: '1', pago: 'efectivo' };
   renovacionData = { alumnoBusqueda: '', disciplina: 'mma', duracion: '1', pagor: 'efectivo' };
-  ventaData = { producto: '', cantidad: 1, pagov: 'efectivo' };
+  ventaData = { producto: '' as number | '', cantidad: 1, pagov: 'efectivo' };
   cajaData = { observaciones: '' };
+  productos: any[] = [];
 
   precioBaseMensual = 350;
 
-  constructor(private http: HttpClient) {}
+  ngOnInit(): void {
+    this.productoService.obtenerProductos().subscribe({
+      next: productos => this.productos = productos
+    });
+  }
 
   abrirInscripcion() { this.showInscripcionModal = true; }
   abrirRenovacion() { this.showRenovacionModal = true; }
@@ -60,30 +78,66 @@ export class QuickActionsComponent {
   }
 
   guardarInscripcion() {
-    this.http.post('http://127.0.0.1:8000/api/inscripciones/', this.inscripcionData).subscribe({
+    this.alumnoService.inscribirAlumno({
+      nombres: this.inscripcionData.nombres,
+      dni: this.inscripcionData.ci,
+      telefono: this.inscripcionData.telefono,
+      disciplina: this.inscripcionData.disciplina,
+      plan_id: Number(this.inscripcionData.duracion),
+      metodoPago: this.inscripcionData.pago === 'qr' ? 'QR / Transferencia' : 'Efectivo'
+    }).subscribe({
       next: () => { alert('¡Inscripción registrada con éxito!'); this.cerrarModales(); },
-      error: () => { alert('Petición enviada. Revisa la pestaña Red para ver la respuesta de Django.'); this.cerrarModales(); }
+      error: error => alert(error.error?.error || 'No se pudo registrar la inscripción.')
     });
   }
 
   guardarRenovacion() {
-    this.http.post('http://127.0.0.1:8000/api/renovaciones/', this.renovacionData).subscribe({
-      next: () => { alert('¡Membresía renovada!'); this.cerrarModales(); },
-      error: () => { alert('Petición enviada. Revisa la pestaña Red.'); this.cerrarModales(); }
+    const termino = this.renovacionData.alumnoBusqueda.trim();
+    const criterio = /^\d+$/.test(termino) ? 'ci' : 'nombre';
+    this.busquedaAlumnosService.buscar(criterio, termino).subscribe({
+      next: alumnos => {
+        const alumno = alumnos[0];
+        if (!alumno) {
+          alert('No se encontró el alumno.');
+          return;
+        }
+        const meses = Number(this.renovacionData.duracion);
+        const vencimiento = new Date();
+        vencimiento.setMonth(vencimiento.getMonth() + meses);
+        this.renovacionService.registrarRenovacion({
+          alumno: alumno.id,
+          dni: alumno.dni,
+          plan_id: meses,
+          monto: this.calcularTotalRenovacion(),
+          metodo_pago: this.renovacionData.pagor === 'qr' ? 'QR / Transferencia' : 'Efectivo',
+          proximo_vencimiento: vencimiento.toISOString().slice(0, 10)
+        }).subscribe({
+          next: () => { alert('¡Membresía renovada!'); this.cerrarModales(); },
+          error: error => alert(error.error?.error || 'No se pudo renovar la membresía.')
+        });
+      },
+      error: error => alert(error.error?.error || 'No se pudo buscar el alumno.')
     });
   }
 
   guardarVenta() {
-    this.http.post('http://127.0.0.1:8000/api/ventas/', this.ventaData).subscribe({
+    if (!this.ventaData.producto) {
+      alert('Selecciona un producto.');
+      return;
+    }
+    this.ventaProductoService.vender(Number(this.ventaData.producto), Number(this.ventaData.cantidad)).subscribe({
       next: () => { alert('¡Venta registrada!'); this.cerrarModales(); },
-      error: () => { alert('Petición enviada. Revisa la pestaña Red.'); this.cerrarModales(); }
+      error: error => alert(error.error?.error || 'No se pudo registrar la venta.')
     });
   }
 
   guardarCaja() {
-    this.http.post('http://127.0.0.1:8000/api/caja/cierre/', this.cajaData).subscribe({
+    this.cierreCajaService.registrarCierre({
+      total_ingresos: 3550,
+      observaciones: this.cajaData.observaciones
+    }).subscribe({
       next: () => { alert('¡Arqueo de caja guardado!'); this.cerrarModales(); },
-      error: () => { alert('Petición enviada. Revisa la pestaña Red.'); this.cerrarModales(); }
+      error: error => alert(error.error?.error || 'No se pudo guardar el arqueo.')
     });
   }
 }

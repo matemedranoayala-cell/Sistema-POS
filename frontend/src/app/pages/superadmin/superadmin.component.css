@@ -92,3 +92,42 @@
 .staff-footer.green { color: #10b981; }
 .staff-footer.blue { color: #3b82f6; }
 .staff-footer.orange { color: #f59e0b; }
+
+/* --- Encabezado --- */
+.usuario-actual { color: #ef4444; font-weight: 700; }
+.usuario-actual small { color: #9ca3af; font-weight: 500; }
+.btn-root:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-salir { border-color: #7f1d1d; color: #fca5a5; }
+.btn-salir:hover { background: #7f1d1d; color: #ffffff; }
+
+/* --- Avisos y estados --- */
+.aviso-error { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; border-radius: 10px; padding: 12px 16px; margin-bottom: 24px; font-size: 14px; font-weight: 600; }
+.btn-root-claro { background: #ffffff; border: 1px solid #fca5a5; color: #991b1b; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.estado-vacio { font-size: 13px; color: #6b7280; margin: 8px 0; }
+.titulo-con-badge { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 6px; }
+.titulo-con-badge h2 { margin: 0; }
+.badge-ejemplo { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #6b7280; background: #f3f4f6; border: 1px dashed #d1d5db; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+
+/* --- Métricas --- */
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.kpi { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.kpi-label { font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.3px; }
+.kpi-valor { font-size: 26px; font-weight: 800; color: #111827; letter-spacing: -0.5px; }
+.kpi-detalle { font-size: 12px; color: #6b7280; }
+
+/* --- Inventario --- */
+.pred-sugerencia { color: #111827; background: #ffffff; border: 1px solid #d1d5db; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+.pred-ok { color: #15803d; font-size: 11px; font-weight: 700; }
+
+/* --- Arqueos y cuentas --- */
+.dashboard-columns-iguales { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+
+@media (max-width: 1100px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .dashboard-columns, .dashboard-columns-iguales { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+  .top-header { flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px; }
+  .header-right { flex-wrap: wrap; gap: 12px; }
+}

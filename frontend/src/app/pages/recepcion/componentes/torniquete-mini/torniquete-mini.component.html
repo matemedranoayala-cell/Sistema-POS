@@ -1,61 +1,71 @@
 <div class="contenedor-torniquete">
   <h3 class="titulo-torniquete">Control de Acceso y Torniquete</h3>
 
-  <div class="barra-busqueda">
-    <div class="input-con-icono">
-      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icono-buscar">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-      </svg>
-      <input
-        type="text"
-        placeholder="Escanear credencial o buscar por CI o nombre..."
-        [(ngModel)]="busqueda"
-        (keyup.enter)="marcarIngreso()">
-    </div>
-    <button type="button" class="boton-ingreso" (click)="marcarIngreso()">
-      Marcar Ingreso
-    </button>
-  </div>
+  <app-buscador-acceso
+    [buscando]="buscando"
+    (buscar)="buscar($event)"
+    (criterioCambiado)="limpiarBusqueda()">
+  </app-buscador-acceso>
 
-  <div class="lista-registros">
-    <div class="registro-fila" *ngFor="let reg of registrosFiltrados">
-      <div class="col-hora" style="display: inline-flex; align-items: center; gap: 6px;">
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16" style="color: #64748b;">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        {{ reg.hora }}
-      </div>
-      <div class="separador-vertical"></div>
-      <div class="col-datos">
-        <span class="nombre-atleta">{{ reg.nombre }}</span>
-        <span class="plan-id">CI: {{ reg.dni || 'S/N' }} | Plan ID: {{ reg.plan }}</span>
-      </div>
-      <div class="col-academia">{{ reg.academia }}</div>
-      <div class="col-estado">
-        <span class="etiqueta-permitido">{{ reg.estado }}</span>
-      </div>
-      <div class="col-accion">
-        <button type="button" class="boton-perfil" (click)="verPerfil(reg)">
-          Ver Perfil
-        </button>
-      </div>
+  <!-- Resultados: solo aparecen después de presionar "Buscar" -->
+  <ng-container *ngIf="resultados !== null; else sinBusqueda">
+    <div class="encabezado-lista">
+      <span>
+        {{ resultados.length }} coincidencia{{ resultados.length === 1 ? '' : 's' }}
+        por {{ ultimaBusqueda?.criterio === 'ci' ? 'CI' : 'nombre' }} "{{ ultimaBusqueda?.termino }}"
+      </span>
+      <button type="button" class="boton-limpiar" (click)="limpiarBusqueda()">Limpiar</button>
     </div>
 
-    <div
-      *ngIf="registrosFiltrados.length === 0"
-      style="padding: 20px; text-align: center; color: #64748b; font-size: 0.9rem;">
-      No se encontraron atletas con "{{ busqueda }}".
-    </div>
-  </div>
+    <div class="lista-registros">
+      <app-fila-acceso
+        *ngFor="let fila of resultadosEnTarjeta"
+        [fila]="fila"
+        [permitirIngreso]="true"
+        [procesando]="registrandoId === fila.alumnoId"
+        [deshabilitado]="registrandoId !== null"
+        (marcarIngreso)="marcarIngreso($event)"
+        (verPerfil)="verPerfil($event)">
+      </app-fila-acceso>
 
-  <div
-    class="pie-torniquete"
-    style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #f1f5f9; display: flex; justify-content: center;">
+      <button type="button" class="boton-mas-resultados" *ngIf="resultadosOcultos > 0" (click)="abrirModalResultados()">
+        + {{ resultadosOcultos }} coincidencia{{ resultadosOcultos === 1 ? '' : 's' }} más
+      </button>
+
+      <div class="mensaje-vacio" *ngIf="resultados.length === 0">
+        No se encontraron atletas con {{ ultimaBusqueda?.criterio === 'ci' ? 'el CI' : 'el nombre' }} "{{ ultimaBusqueda?.termino }}".
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #sinBusqueda>
+    <div class="encabezado-lista" *ngIf="ultimoIngreso">
+      <span>Último ingreso</span>
+    </div>
+    <div class="lista-registros">
+      <app-fila-acceso
+        *ngIf="ultimoIngreso; else sinIngresos"
+        [fila]="ultimoIngreso"
+        (verPerfil)="verPerfil($event)">
+      </app-fila-acceso>
+      <ng-template #sinIngresos>
+        <div class="mensaje-vacio">Busca un atleta por CI o por nombre para registrar su ingreso.</div>
+      </ng-template>
+    </div>
+  </ng-template>
+
+  <div class="pie-torniquete">
     <button
+      *ngIf="resultados && resultados.length > 1"
       type="button"
-      class="boton-historial"
-      (click)="verHistorialCompleto()"
-      style="display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 10px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer;">
+      class="boton-historial boton-resultados"
+      (click)="abrirModalResultados()">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+      </svg>
+      Ver los {{ resultados.length }} resultados
+    </button>
+    <button type="button" class="boton-historial" (click)="verHistorialCompleto()">
       <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
@@ -63,3 +73,14 @@
     </button>
   </div>
 </div>
+
+<app-modal-resultados-acceso
+  *ngIf="mostrarModalResultados && resultados"
+  [resultados]="resultados"
+  [criterio]="ultimaBusqueda?.criterio ?? 'ci'"
+  [termino]="ultimaBusqueda?.termino ?? ''"
+  [registrandoId]="registrandoId"
+  (cerrar)="mostrarModalResultados = false"
+  (marcarIngreso)="marcarIngreso($event)"
+  (verPerfil)="verPerfil($event)">
+</app-modal-resultados-acceso>

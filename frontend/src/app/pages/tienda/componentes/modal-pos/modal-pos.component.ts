@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
@@ -12,7 +12,7 @@ import { AuthService } from '../../../../services/auth.service';
   imports: [CommonModule, FormsModule],
   templateUrl: './modal-pos.component.html'
 })
-export class ModalPosComponent implements OnInit {
+export class ModalPosComponent implements OnInit, OnChanges {
   @Input() catalogo: any[] = [];
   @Input() cargando = false;
   @Input() procesando = false;
@@ -49,6 +49,40 @@ export class ModalPosComponent implements OnInit {
 
   ngOnInit() {
     this.cargarMiembrosPreguardados();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['catalogo'] && !changes['catalogo'].firstChange) {
+      this.sincronizarCarritoConCatalogo();
+    }
+  }
+
+  /** Ajusta el carrito al stock y precio actuales (p. ej. tras un error de stock). */
+  private sincronizarCarritoConCatalogo() {
+    const actuales = new Map(this.catalogo.map(p => [p.id, p]));
+    const avisos: string[] = [];
+
+    this.carrito = this.carrito.filter(item => {
+      const prod = actuales.get(item.id);
+      if (!prod || prod.stock <= 0) {
+        avisos.push(`${item.nombre} se quitó (sin stock)`);
+        return false;
+      }
+      item.stock = prod.stock;
+      item.precio = prod.precio;
+      if (item.cantidad > prod.stock) {
+        avisos.push(`${item.nombre} ajustado a ${prod.stock}`);
+        item.cantidad = prod.stock;
+      }
+      item.subtotal = item.cantidad * item.precio;
+      return true;
+    });
+
+    if (this.carrito.length === 0) this.mostrarMiniFormCobro = false;
+    this.calcularTotal();
+    if (avisos.length > 0) {
+      this.toastr.info(avisos.join('. ') + '.', 'Carrito actualizado');
+    }
   }
 
   cargarMiembrosPreguardados() {
@@ -172,6 +206,7 @@ export class ModalPosComponent implements OnInit {
     const sesion = this.authService.obtenerSesion();
     const vendedor = sesion?.username || 'Encargado de Tienda';
     const cliente = this.datosCobro.clienteNombre.trim() || 'Atleta Kombat';
+    const pendiente = this.datosCobro.modalidadPago === 'Por cobrar al finalizar entreno';
     const detalleProductos = this.carrito
       .map(i => `- ${i.cantidad}x ${i.nombre}: Bs ${i.subtotal}`)
       .join('\n');
@@ -179,10 +214,12 @@ export class ModalPosComponent implements OnInit {
     return (
       `Hola *${cliente}* (${this.datosCobro.rolCliente}), te enviamos tu ticket de *Kiosko KOMBAT*:\n\n` +
       `*PRODUCTOS PEDIDOS:*\n${detalleProductos}\n\n` +
-      `*TOTAL A PAGAR: Bs ${this.totalCarrito.toFixed(2)}*\n` +
+      `*${pendiente ? 'TOTAL A PAGAR' : 'TOTAL PAGADO'}: Bs ${this.totalCarrito.toFixed(2)}*\n` +
       `Estado: ${this.datosCobro.modalidadPago}\n` +
       `Atendido por: ${vendedor}\n\n` +
-      `Puedes pasar a cancelar al finalizar tu entrenamiento. ¡Buen entreno!`
+      (pendiente
+        ? `Puedes pasar a cancelar al finalizar tu entrenamiento. ¡Buen entreno!`
+        : `¡Gracias por tu compra! ¡Buen entreno!`)
     );
   }
 

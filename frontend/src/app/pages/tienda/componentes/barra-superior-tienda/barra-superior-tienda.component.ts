@@ -19,7 +19,6 @@ export class BarraSuperiorTiendaComponent {
 
   cerrarSesion() {
     this.authService.logout();
-    localStorage.removeItem('kombat_sesion');
     this.router.navigate(['/login']);
   }
 }

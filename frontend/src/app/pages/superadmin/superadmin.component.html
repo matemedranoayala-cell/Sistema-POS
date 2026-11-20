@@ -10,8 +10,11 @@
       <span class="date">{{ fechaActual }}</span>
     </div>
     <div class="header-right">
-      <span style="color: #ef4444; font-weight: 700;">{{ usuarioActual }}</span>
-      <button class="btn-root" (click)="ejecutarAccionMantenimiento()">⚙️ Opciones Core</button>
+      <span class="usuario-actual">{{ usuarioActual }} <small>(Superadmin)</small></span>
+      <button type="button" class="btn-root" [disabled]="cargando" (click)="cargarResumen()">
+        {{ cargando ? 'Actualizando...' : '↻ Actualizar' }}
+      </button>
+      <button type="button" class="btn-root btn-salir" (click)="cerrarSesion()">Cerrar sesión</button>
     </div>
   </header>
 
@@ -20,27 +23,75 @@
 
       <div class="page-title">
         <h1>Inteligencia de Negocio y Auditoría</h1>
-        <p>Algoritmos predictivos, análisis de retención, mapa de calor de tráfico y registros forenses</p>
+        <p>Ingresos, inventario, tráfico de la academia, arqueos de caja y cuentas del sistema</p>
+      </div>
+
+      <div class="aviso-error" *ngIf="errorCarga">
+        <span>No se pudo conectar con el servidor en el puerto 8000.</span>
+        <button type="button" class="btn-root-claro" (click)="cargarResumen()">Reintentar</button>
+      </div>
+
+      <!-- Métricas principales -->
+      <div class="kpi-grid mb-24">
+        <div class="kpi">
+          <span class="kpi-label">Ingresos de hoy</span>
+          <strong class="kpi-valor">{{ resumen ? ('Bs ' + (resumen.ingresos.hoy.total | number:'1.2-2')) : '—' }}</strong>
+          <span class="kpi-detalle" *ngIf="resumen">
+            Membresías Bs {{ resumen.ingresos.hoy.membresias | number:'1.2-2' }} · Tienda Bs {{ resumen.ingresos.hoy.tienda | number:'1.2-2' }}
+          </span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">Ingresos del mes</span>
+          <strong class="kpi-valor">{{ resumen ? ('Bs ' + (resumen.ingresos.mes.total | number:'1.2-2')) : '—' }}</strong>
+          <span class="kpi-detalle" *ngIf="resumen">
+            Membresías Bs {{ resumen.ingresos.mes.membresias | number:'1.2-2' }} · Tienda Bs {{ resumen.ingresos.mes.tienda | number:'1.2-2' }}
+          </span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">Membresías vigentes</span>
+          <strong class="kpi-valor">{{ resumen ? resumen.alumnos.membresias_vigentes : '—' }}</strong>
+          <span class="kpi-detalle" *ngIf="resumen">de {{ resumen.alumnos.alumnos_registrados }} alumnos registrados</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">Visitas de hoy</span>
+          <strong class="kpi-valor">{{ resumen ? resumen.alumnos.visitas_hoy : '—' }}</strong>
+          <span class="kpi-detalle">Ingresos permitidos en recepción</span>
+        </div>
       </div>
 
       <div class="dashboard-columns mb-32">
         <div class="list-container flex-2">
-          <h2>Mapa de Calor: Tráfico en Torniquetes</h2>
-          <p class="subtext">Densidad histórica de asistencia para optimización de horarios de entrenadores.</p>
+          <h2>Mapa de Calor: Asistencia por Horario</h2>
+          <p class="subtext">
+            Asistencias de las últimas {{ resumen?.mapa_calor?.semanas_analizadas ?? 8 }} semanas, para organizar los horarios de entrenadores.
+          </p>
 
-          <div class="heatmap-wrapper">
-            <div class="heatmap-y-axis">
-              <span *ngFor="let row of heatmapDias">{{ row.dia }}</span>
-            </div>
-            <div class="heatmap-grid-area">
-              <div class="heatmap-row" *ngFor="let row of heatmapDias">
-                <div class="heat-block" *ngFor="let val of row.valores" [ngClass]="'heat-' + val"></div>
+          <ng-container *ngIf="resumen as r">
+            <p class="estado-vacio" *ngIf="r.mapa_calor.total_asistencias === 0">
+              Todavía no hay asistencias registradas en este periodo.
+            </p>
+
+            <div class="heatmap-wrapper">
+              <div class="heatmap-y-axis">
+                <span *ngFor="let row of r.mapa_calor.dias">{{ row.dia }}</span>
               </div>
-              <div class="heatmap-x-axis">
-                <span *ngFor="let hora of heatmapHoras">{{ hora }}</span>
+              <div class="heatmap-grid-area">
+                <div class="heatmap-row" *ngFor="let row of r.mapa_calor.dias">
+                  <div
+                    class="heat-block"
+                    *ngFor="let val of row.valores; let i = index"
+                    [ngClass]="'heat-' + val"
+                    [title]="row.dia + ' ' + r.mapa_calor.horas[i] + ': ' + textoAsistencias(row.conteos[i])">
+                  </div>
+                </div>
+                <div class="heatmap-x-axis">
+                  <span *ngFor="let hora of r.mapa_calor.horas">{{ hora }}</span>
+                </div>
               </div>
             </div>
-          </div>
+          </ng-container>
+          <p class="estado-vacio" *ngIf="!resumen && cargando">Cargando asistencias...</p>
+
           <div class="heat-legend">
             <span class="legend-item"><div class="heat-block heat-low"></div> Vacío</span>
             <span class="legend-item"><div class="heat-block heat-med"></div> Normal</span>
@@ -50,26 +101,39 @@
         </div>
 
         <div class="flex-column flex-1">
-          <div class="list-container mb-24">
-            <h2>Predicción de Inventario (IA)</h2>
-            <p class="subtext">Basado en velocidad histórica de ventas.</p>
+          <div class="list-container">
+            <h2>Predicción de Inventario</h2>
+            <p class="subtext">
+              Según el ritmo de ventas de los últimos {{ resumen?.inventario?.dias_analizados ?? 14 }} días.
+            </p>
 
-            <div class="prediction-list">
-              <div class="prediction-card" *ngFor="let pred of prediccionesInventario" [ngClass]="pred.color">
+            <p class="estado-vacio" *ngIf="!resumen && cargando">Cargando inventario...</p>
+            <p class="estado-vacio" *ngIf="resumen && resumen.inventario.productos.length === 0">
+              No hubo ventas de productos en este periodo.
+            </p>
+
+            <div class="prediction-list" *ngIf="resumen">
+              <div class="prediction-card" *ngFor="let pred of resumen.inventario.productos" [ngClass]="pred.color">
                 <div class="pred-header">
                   <strong>{{ pred.producto }}</strong>
-                  <span class="pred-tag">Agota: {{ pred.agotaEn }}</span>
+                  <span class="pred-tag">
+                    {{ pred.stock <= 0 ? 'Agotado' : 'Agota: ' + formatearDia(pred.agota_en) }}
+                  </span>
                 </div>
                 <div class="pred-footer">
-                  <span>Probabilidad: {{ pred.confianza }}%</span>
-                  <button class="btn-order">{{ pred.sugerencia }}</button>
+                  <span>Stock {{ pred.stock }} · vende {{ pred.ritmo_diario }}/día</span>
+                  <span class="pred-sugerencia" *ngIf="pred.sugerencia_compra > 0">Comprar {{ pred.sugerencia_compra }} u</span>
+                  <span class="pred-ok" *ngIf="pred.sugerencia_compra === 0">Stock suficiente</span>
                 </div>
               </div>
             </div>
           </div>
 
           <div class="list-container">
-            <h2>Análisis de Retención (Churn)</h2>
+            <div class="titulo-con-badge">
+              <h2>Análisis de Retención (Churn)</h2>
+              <span class="badge-ejemplo">Datos de ejemplo</span>
+            </div>
             <div class="churn-stats">
               <div class="stat-box">
                 <span>Inscritos (Mes)</span>
@@ -88,9 +152,17 @@
         </div>
       </div>
 
+      <div class="dashboard-columns-iguales mb-32">
+        <app-revision-arqueos (revisado)="cargarResumen()"></app-revision-arqueos>
+        <app-cuentas-sistema></app-cuentas-sistema>
+      </div>
+
       <div class="dashboard-columns">
         <div class="list-container flex-2">
-          <h2>Auditoría Financiera Forense</h2>
+          <div class="titulo-con-badge">
+            <h2>Auditoría Financiera Forense</h2>
+            <span class="badge-ejemplo">Datos de ejemplo</span>
+          </div>
           <p class="subtext">Registro inmutable de anulaciones, descuentos manuales y modificaciones críticas.</p>
 
           <div class="list-wrapper">
@@ -115,9 +187,9 @@
         </div>
 
         <div class="list-container flex-1">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <div class="titulo-con-badge" style="margin-bottom: 20px;">
             <h2 style="margin: 0;">Personal en Línea</h2>
-            <span class="pulse-indicator"></span>
+            <span class="badge-ejemplo">Datos de ejemplo</span>
           </div>
 
           <div class="incoming-list">

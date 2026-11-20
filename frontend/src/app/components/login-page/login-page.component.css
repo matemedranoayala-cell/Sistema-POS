@@ -69,6 +69,11 @@
 }
 
 .enlace-olvido {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
   font-size: 0.85rem;
   color: #2563eb;
   text-decoration: none;
@@ -105,6 +110,115 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Panel de recuperación de contraseña */
+.fondo-modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: rgba(15, 17, 21, 0.6);
+  z-index: 1000;
+}
+
+.panel-recuperacion {
+  width: 100%;
+  max-width: 420px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+}
+
+.panel-encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.panel-encabezado h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #0f1115;
+}
+
+.boton-cerrar {
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.panel-descripcion {
+  font-size: 0.88rem;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0 0 1.25rem;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.campo input,
+.campo select {
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background-color: #ffffff;
+}
+
+.campo input:focus,
+.campo select:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.panel-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.boton-secundario,
+.boton-whatsapp {
+  padding: 0.65rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.boton-secundario {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  color: #374151;
+}
+
+.boton-whatsapp {
+  background-color: #25d366;
+  border: none;
+  color: #ffffff;
+}
+
+.boton-whatsapp:hover {
+  background-color: #1ebe5a;
 }
 
 @media (max-width: 768px) {

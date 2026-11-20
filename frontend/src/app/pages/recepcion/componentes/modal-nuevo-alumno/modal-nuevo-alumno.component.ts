@@ -28,6 +28,7 @@ export class ModalNuevoAlumnoComponent {
     email: '',
     disciplina: '',
     plan: '',
+    metodoPago: 'Efectivo',
     esCompetidor: false,
     academiaOrigen: 'Kombat (Local)',
     asociacion: ''
@@ -55,8 +56,11 @@ export class ModalNuevoAlumnoComponent {
         this.guardar.emit(respuesta);
         this.cerrar.emit();
       },
-      error: () => {
-        this.toastr.error('No se pudo guardar el alumno en el servidor.', 'Error de Conexion');
+      error: (error) => {
+        const mensaje = error?.status === 0
+          ? 'No se pudo conectar con el servidor. Verifica que el backend esté iniciado.'
+          : error?.error?.error || 'No se pudo guardar el alumno en el servidor.';
+        this.toastr.error(mensaje, 'Error al Inscribir');
       }
     });
   }

@@ -1,0 +1,81 @@
+<div class="list-container">
+  <div class="encabezado">
+    <div>
+      <h2>Cuentas y Contraseñas</h2>
+      <p class="subtext">Restablece la contraseña de quien la haya olvidado.</p>
+    </div>
+    <span class="contador">{{ cuentas.length }} cuentas</span>
+  </div>
+
+  <input class="buscador" type="text" [(ngModel)]="busqueda" placeholder="Buscar por usuario o rol...">
+
+  <p class="estado-vacio" *ngIf="cargando && cuentas.length === 0">Cargando cuentas...</p>
+  <p class="estado-vacio error" *ngIf="errorCarga">
+    No se pudieron cargar las cuentas.
+    <button type="button" class="btn-enlace" (click)="cargarCuentas()">Reintentar</button>
+  </p>
+  <p class="estado-vacio" *ngIf="!cargando && !errorCarga && cuentasFiltradas.length === 0">
+    No hay cuentas que coincidan.
+  </p>
+
+  <div class="lista-cuentas">
+    <div class="fila-cuenta" *ngFor="let cuenta of cuentasFiltradas">
+      <div class="datos-cuenta">
+        <strong>{{ cuenta.username }}</strong>
+        <div class="etiquetas">
+          <span class="role-badge">{{ etiquetaRol(cuenta.rol) }}</span>
+          <span class="badge-inactivo" *ngIf="!cuenta.activo">Inhabilitado</span>
+        </div>
+      </div>
+      <button type="button" class="btn-secundario" (click)="abrirRestablecer(cuenta)">Restablecer</button>
+    </div>
+  </div>
+</div>
+
+<div class="fondo-modal" *ngIf="cuentaSeleccionada" (click)="cerrarModal()">
+  <div class="panel-modal" role="dialog" aria-modal="true" aria-labelledby="titulo-restablecer" (click)="$event.stopPropagation()">
+    <div class="modal-encabezado">
+      <h2 id="titulo-restablecer">Restablecer contraseña</h2>
+      <button type="button" class="btn-cerrar" aria-label="Cerrar" [disabled]="guardando" (click)="cerrarModal()">×</button>
+    </div>
+
+    <ng-container *ngIf="!contrasenaAsignada; else asignada">
+      <p class="modal-texto">
+        Nueva contraseña para <strong>{{ cuentaSeleccionada.username }}</strong>
+        ({{ etiquetaRol(cuentaSeleccionada.rol) }}). La anterior dejará de funcionar.
+      </p>
+
+      <label class="campo">
+        <span>Nueva contraseña (mínimo {{ largoMinimo }} caracteres)</span>
+        <div class="campo-clave">
+          <input [type]="mostrarContrasena ? 'text' : 'password'" [(ngModel)]="nuevaContrasena" (keyup.enter)="guardar()" autocomplete="new-password">
+          <button type="button" class="btn-secundario" (click)="mostrarContrasena = !mostrarContrasena">
+            {{ mostrarContrasena ? 'Ocultar' : 'Ver' }}
+          </button>
+          <button type="button" class="btn-secundario" (click)="regenerar()">Generar</button>
+        </div>
+      </label>
+
+      <div class="modal-acciones">
+        <button type="button" class="btn-secundario" [disabled]="guardando" (click)="cerrarModal()">Cancelar</button>
+        <button type="button" class="btn-principal" [disabled]="guardando" (click)="guardar()">
+          {{ guardando ? 'Guardando...' : 'Restablecer contraseña' }}
+        </button>
+      </div>
+    </ng-container>
+
+    <ng-template #asignada>
+      <p class="modal-texto">
+        Listo. Entrégale esta contraseña a <strong>{{ cuentaSeleccionada.username }}</strong>.
+        No se volverá a mostrar.
+      </p>
+      <div class="clave-final">
+        <code>{{ contrasenaAsignada }}</code>
+        <button type="button" class="btn-secundario" (click)="copiar()">Copiar</button>
+      </div>
+      <div class="modal-acciones">
+        <button type="button" class="btn-principal" (click)="cerrarModal()">Terminar</button>
+      </div>
+    </ng-template>
+  </div>
+</div>

@@ -1,6 +1,14 @@
+from zoneinfo import ZoneInfo
+
+from django.utils import timezone
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 from rest_framework import status
 from adapters.controllers.base_controller import BaseCleanController
+from adapters.repositories.django_repositories import DjangoAlumnoRepository, DjangoInscripcionRepository
+from application.use_cases.buscar_alumnos import BuscarAlumnosUseCase
+from application.use_cases.inscribir_alumno import InscribirAlumnoUseCase
 from infrastructure.django_apps.core_db.models import (
     Alumno,
     Pago,
@@ -14,13 +22,18 @@ class AlumnoController(BaseCleanController):
     model = Alumno
 
     def post(self, request):
-        res = super().post(request)
-        if res.status_code == status.HTTP_201_CREATED and res.data.get('id'):
-            Asistencia.objects.create(
-                alumno_id=res.data['id'],
-                estado_acceso='Permitido'
+        hoy = timezone.localtime(timezone.now(), ZoneInfo("America/La_Paz")).date()
+        caso = InscribirAlumnoUseCase(DjangoInscripcionRepository())
+        try:
+            resultado = caso.ejecutar(
+                datos=request.data,
+                metodo_pago=request.data.get("metodo_pago"),
+                usuario=request.data.get("usuario"),
+                fecha_actual=hoy,
             )
-        return res
+        except ValueError as error:
+            return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(resultado, status=status.HTTP_201_CREATED)
 
 
 class PagoController(BaseCleanController):
@@ -130,3 +143,21 @@ class AsistenciaController(BaseCleanController):
         item['academia'] = alumno_obj.academia_origen or 'Kombat'
         item['estado'] = nuevo.estado_acceso
         return Response(item, status=status.HTTP_201_CREATED)
+
+class BuscarAlumnosController(APIView):
+    """GET /api/alumnos/buscar/?criterio=ci|nombre&q=texto"""
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+        hoy = timezone.localtime(timezone.now(), ZoneInfo("America/La_Paz")).date()
+        caso = BuscarAlumnosUseCase(DjangoAlumnoRepository())
+        try:
+            resultados = caso.ejecutar(
+                criterio=request.query_params.get("criterio"),
+                termino=request.query_params.get("q"),
+                fecha_actual=hoy,
+            )
+        except ValueError as error:
+            return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(resultados, status=status.HTTP_200_OK)

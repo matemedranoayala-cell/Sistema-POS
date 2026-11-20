@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 class Empleado(models.Model):
     ci_empleado = models.CharField(primary_key=True, max_length=20)
@@ -81,10 +82,17 @@ class Venta(models.Model):
     rol_cliente = models.CharField(max_length=50, blank=True, default='')
     vendedor = models.CharField(max_length=150, blank=True, default='')
     estado_pago = models.CharField(max_length=20, default='PAGADO')
+    fecha_pago = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = 'api_venta'
         app_label = 'core_db'
+
+    def save(self, *args, **kwargs):
+        # Toda venta pagada guarda cuándo se cobró (para el arqueo del día).
+        if self.estado_pago == 'PAGADO' and self.fecha_pago is None:
+            self.fecha_pago = timezone.now()
+        super().save(*args, **kwargs)
 
 class DetalleVenta(models.Model):
     venta = models.ForeignKey(Venta, related_name='detalles', on_delete=models.CASCADE)

@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.utils import timezone
 
 from infrastructure.django_apps.core_db.models import Bitacora, Venta
 
@@ -18,7 +19,8 @@ def marcar_venta_pagada(venta_id, metodo_pago, usuario):
 
     venta.metodo_pago = metodo_pago
     venta.estado_pago = "PAGADO"
-    venta.save(update_fields=["metodo_pago", "estado_pago"])
+    venta.fecha_pago = timezone.now()
+    venta.save(update_fields=["metodo_pago", "estado_pago", "fecha_pago"])
 
     Bitacora.objects.create(
         usuario=usuario,

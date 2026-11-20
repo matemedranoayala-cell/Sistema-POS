@@ -1,0 +1,38 @@
+<div class="registro-fila">
+  <div class="col-hora">
+    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16" class="icono-hora">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    {{ fila.hora }}
+  </div>
+  <div class="separador-vertical" [class.vencida]="tieneDatosMembresia && !fila.membresiaVigente"></div>
+  <div class="col-datos">
+    <span class="nombre-atleta">{{ fila.nombre }}</span>
+    <span class="plan-id">CI: {{ fila.dni || 'S/N' }} | Plan ID: {{ fila.plan }}</span>
+  </div>
+  <div class="col-academia">{{ fila.academia }}</div>
+  <div class="col-estado">
+    <span
+      *ngIf="tieneDatosMembresia; else estadoIngreso"
+      class="etiqueta"
+      [class.vigente]="fila.membresiaVigente"
+      [class.vencida]="!fila.membresiaVigente"
+      [title]="fila.vencimientoMembresia ? 'Vence: ' + fila.vencimientoMembresia : 'Sin pagos registrados'">
+      {{ fila.membresiaVigente ? 'Vigente' : (fila.vencimientoMembresia ? 'Vencida' : 'Sin pago') }}
+    </span>
+    <ng-template #estadoIngreso>
+      <span class="etiqueta permitido">{{ fila.estado }}</span>
+    </ng-template>
+  </div>
+  <div class="col-accion">
+    <button type="button" class="boton-perfil" (click)="verPerfil.emit(fila)">Ver Perfil</button>
+    <button
+      *ngIf="permitirIngreso"
+      type="button"
+      class="boton-ingreso"
+      [disabled]="procesando || deshabilitado"
+      (click)="marcarIngreso.emit(fila)">
+      {{ procesando ? 'Registrando...' : 'Marcar Ingreso' }}
+    </button>
+  </div>
+</div>

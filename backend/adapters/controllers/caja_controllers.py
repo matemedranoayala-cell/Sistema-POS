@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.db import IntegrityError
 from django.utils import timezone
 
 from application.use_cases.ajustar_stock import ajustar_stock
@@ -25,8 +26,32 @@ from infrastructure.django_apps.core_db.models import (
 )
 
 
+ZONA_LOCAL = ZoneInfo("America/La_Paz")
+
+
 class ProductoController(BaseCleanController):
     model = Producto
+
+    def post(self, request):
+        sku = str(request.data.get("sku") or "").strip().upper()
+        if not sku:
+            return Response(
+                {"error": "El SKU es obligatorio."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if Producto.objects.filter(sku__iexact=sku).exists():
+            return Response(
+                {"error": f"Ya existe un producto con el SKU {sku}."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            return super().post(request)
+        except IntegrityError:
+            # Otro usuario registro el mismo SKU al mismo tiempo.
+            return Response(
+                {"error": f"Ya existe un producto con el SKU {sku}."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class VentaController(BaseCleanController):
@@ -34,10 +59,19 @@ class VentaController(BaseCleanController):
 
     def serializar(self, obj):
         data = super().serializar(obj)
+        # El serializador base pisa fecha/hora con el ultimo DateTimeField
+        # (fecha_pago); se recalculan desde la fecha de la venta.
         if obj.fecha:
-            fecha_local = timezone.localtime(obj.fecha, ZoneInfo("America/La_Paz"))
+            fecha_utc = timezone.localtime(obj.fecha)
+            data["fecha"] = fecha_utc.strftime("%Y-%m-%d")
+            data["hora"] = fecha_utc.strftime("%I:%M %p")
+            fecha_local = timezone.localtime(obj.fecha, ZONA_LOCAL)
             data["fecha_local"] = fecha_local.date().isoformat()
             data["hora_local"] = fecha_local.strftime("%I:%M %p")
+        if obj.fecha_pago:
+            data["fecha_pago_local"] = (
+                timezone.localtime(obj.fecha_pago, ZONA_LOCAL).date().isoformat()
+            )
         return data
 
 

@@ -1,6 +1,14 @@
 from django.urls import path
 from adapters.controllers.api_controllers import LoginController, LogoutController
 from adapters.controllers.personal_controllers import PersonalController
+from adapters.controllers.recepcion_controllers import BuscarAlumnosController
+from adapters.controllers.superadmin_controllers import (
+    ArqueosSuperadminController,
+    CuentasSuperadminController,
+    RestablecerContrasenaController,
+    ResumenSuperadminController,
+    RevisarArqueoController,
+)
 from adapters.controllers.caja_controllers import (
     AjustarStockController,
     MarcarVentaPagadaController,
@@ -24,6 +32,7 @@ urlpatterns = [
     path('api/logout/', LogoutController.as_view(), name='logout'),
     path('api/personal/', PersonalController.as_view(), name='gestion_personal'),
     path('api/personal/<int:pk>/', PersonalController.as_view(), name='detalle_personal'),
+    path('api/alumnos/buscar/', BuscarAlumnosController.as_view(), name='buscar_alumnos'),
     path('api/alumnos/', AlumnoController.as_view(), name='alumnos'),
     path('api/pagos/', PagoController.as_view(), name='pagos'),
     path('api/asistencias/', AsistenciaController.as_view(), name='asistencias'),
@@ -38,4 +47,9 @@ urlpatterns = [
     path('api/ventas/producto/', VenderProductoController.as_view(), name='vender_producto'),
     path('api/ventas/carrito/', VenderCarritoController.as_view(), name='vender_carrito'),
     path('api/productos/<int:pk>/stock/', AjustarStockController.as_view(), name='ajustar_stock'),
+    path('api/superadmin/resumen/', ResumenSuperadminController.as_view(), name='superadmin_resumen'),
+    path('api/superadmin/cuentas/', CuentasSuperadminController.as_view(), name='superadmin_cuentas'),
+    path('api/superadmin/restablecer-contrasena/', RestablecerContrasenaController.as_view(), name='superadmin_restablecer_contrasena'),
+    path('api/superadmin/arqueos/', ArqueosSuperadminController.as_view(), name='superadmin_arqueos'),
+    path('api/superadmin/arqueos/<int:pk>/revisar/', RevisarArqueoController.as_view(), name='superadmin_revisar_arqueo'),
 ]

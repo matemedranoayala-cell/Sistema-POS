@@ -1,45 +1,37 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { ResumenSuperadmin, SuperadminService } from '../../services/superadmin.service';
+import { CuentasSistemaComponent } from './componentes/cuentas-sistema/cuentas-sistema.component';
+import { RevisionArqueosComponent } from './componentes/revision-arqueos/revision-arqueos.component';
 
 @Component({
   selector: 'app-superadmin',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CuentasSistemaComponent, RevisionArqueosComponent],
   templateUrl: './superadmin.component.html',
   styleUrls: ['./superadmin.component.css']
 })
-export class SuperadminComponent {
-  fechaActual = 'Sunday, September 27, 2026';
-  usuarioActual = 'ADK (Root Access)';
+export class SuperadminComponent implements OnInit {
+  private authService = inject(AuthService);
+  private superadminService = inject(SuperadminService);
+  private router = inject(Router);
 
-  metricasVitales = {
-    ingresoDiario: 4250,
-    mrrMensual: 112400,
-    atletasActivos: 342,
-    visitasHoy: 128
-  };
+  fechaActual = '';
+  usuarioActual = '';
 
+  resumen: ResumenSuperadmin | null = null;
+  cargando = false;
+  errorCarga = false;
+
+  // --- Datos de ejemplo: estas tarjetas todavía no están conectadas al backend.
   churnData = {
     nuevasInscripciones: 45,
     abandonos: 12,
     tasaRetencion: 88.5,
-    riesgoGlobal: 'Bajo',
     planMayorFuga: '2x / sem'
   };
-
-  prediccionesInventario = [
-    { producto: 'Agua Mineral 500ml', ritmoVenta: 'Alto', agotaEn: 'Jueves 18:00', confianza: 94, sugerencia: 'Comprar 50u', color: 'red' },
-    { producto: 'Pre-entreno C4', ritmoVenta: 'Medio', agotaEn: 'Sábado 10:00', confianza: 82, sugerencia: 'Comprar 12u', color: 'orange' }
-  ];
-
-  heatmapHoras = ['06:00', '09:00', '12:00', '16:00', '19:00', '21:00'];
-  heatmapDias = [
-    { dia: 'Lun', valores: ['low', 'med', 'low', 'high', 'max', 'med'] },
-    { dia: 'Mar', valores: ['low', 'low', 'low', 'med', 'high', 'high'] },
-    { dia: 'Mié', valores: ['med', 'med', 'low', 'high', 'max', 'med'] },
-    { dia: 'Jue', valores: ['low', 'low', 'low', 'med', 'high', 'med'] },
-    { dia: 'Vie', valores: ['low', 'med', 'low', 'med', 'med', 'low'] }
-  ];
 
   auditoriaForense = [
     { tiempo: '19:45:12', ip: '192.168.1.12', accion: 'Anulación de Recibo', detalle: 'Ticket TKT-081 anulado post-pago (Bs 250)', modulo: 'Recepción', usuario: 'Camila Vaca', color: 'red' },
@@ -49,12 +41,52 @@ export class SuperadminComponent {
   ];
 
   personalEnLinea = [
-    { nombre: 'ADK (Tú)', rol: 'Superadmin', ubicacion: 'Sistema Core', ip: '192.168.1.5', login: '22:30', estado: 'Activo', color: 'blue' },
-    { nombre: 'Camila (Recepción)', rol: 'Recepcionista', ubicacion: 'Recepción Central', ip: '192.168.1.12', login: '14:00', estado: 'Activo', color: 'green' },
-    { nombre: 'Coach Marcos', rol: 'Entrenador', ubicacion: 'Tatami Principal', ip: '192.168.1.45', login: '17:30', estado: 'En Clase', color: 'orange' }
+    { nombre: 'Camila (Recepción)', rol: 'Recepcionista', ubicacion: 'Recepción Central', estado: 'Activo', color: 'green' },
+    { nombre: 'Coach Marcos', rol: 'Entrenador', ubicacion: 'Tatami Principal', estado: 'En Clase', color: 'orange' }
   ];
+  // ---
 
-  ejecutarAccionMantenimiento() {
-    console.log('Abriendo menú de opciones maestras...');
+  ngOnInit(): void {
+    const fecha = new Date().toLocaleDateString('es-BO', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+    this.fechaActual = fecha.charAt(0).toUpperCase() + fecha.slice(1);
+    this.usuarioActual = this.authService.obtenerSesion().username;
+    this.cargarResumen();
+  }
+
+  cargarResumen(): void {
+    this.cargando = true;
+    this.superadminService.obtenerResumen().subscribe({
+      next: resumen => {
+        this.resumen = resumen;
+        this.cargando = false;
+        this.errorCarga = false;
+      },
+      error: () => {
+        this.cargando = false;
+        this.errorCarga = true;
+      }
+    });
+  }
+
+  /** "2026-11-18" -> "mar 18/11" */
+  formatearDia(iso: string): string {
+    const [anio, mes, dia] = iso.split('-').map(Number);
+    const fecha = new Date(anio, mes - 1, dia);
+    const nombre = fecha.toLocaleDateString('es-BO', { weekday: 'short' }).replace('.', '');
+    return `${nombre} ${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}`;
+  }
+
+  textoAsistencias(conteo: number): string {
+    return `${conteo} ${conteo === 1 ? 'asistencia' : 'asistencias'}`;
+  }
+
+  cerrarSesion(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

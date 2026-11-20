@@ -1,0 +1,18 @@
+.toggle { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #4b5563; font-weight: 600; margin-bottom: 12px; cursor: pointer; }
+.lista-arqueos { display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow-y: auto; }
+.arqueo { border: 1px solid #e5e7eb; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 12px 14px; background: #fafafa; }
+.arqueo.estado-verificado { border-left-color: #10b981; }
+.arqueo.estado-observado { border-left-color: #ef4444; }
+.arqueo-fila { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.arqueo-datos { display: flex; flex-direction: column; gap: 2px; }
+.arqueo-datos strong { font-size: 14px; color: #111827; }
+.arqueo-fecha { font-size: 12px; color: #6b7280; }
+.arqueo-etiquetas { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.estado-tag, .dif { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; background: #f3f4f6; color: #374151; white-space: nowrap; }
+.dif.red { background: #fef2f2; color: #b91c1c; }
+.dif.orange { background: #fffbeb; color: #b45309; }
+.dif.green { background: #f0fdf4; color: #15803d; }
+.arqueo-obs { margin: 8px 0 0 0; font-size: 12px; color: #4b5563; white-space: pre-line; line-height: 1.45; }
+.arqueo-acciones { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+.observacion { margin-top: 10px; }
+.observacion textarea { resize: vertical; }

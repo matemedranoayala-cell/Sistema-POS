@@ -1,175 +1,179 @@
-import { Component, Output, EventEmitter, OnInit, inject } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { AsistenciaService } from '../../../../services/asistencia.service';
-import { AlumnoService } from '../../../../services/alumno.service';
 import { BitacoraService } from '../../../../services/bitacora.service';
+import {
+  AlumnoEncontrado,
+  BusquedaAlumnosService,
+  CriterioBusqueda
+} from '../../../../services/busqueda-alumnos.service';
+import { BuscadorAccesoComponent } from '../buscador-acceso/buscador-acceso.component';
+import { FilaAcceso, FilaAccesoComponent } from '../fila-acceso/fila-acceso.component';
+import { ModalResultadosAccesoComponent } from '../modal-resultados-acceso/modal-resultados-acceso.component';
+
+/** Cuántas coincidencias se muestran en la tarjeta; el resto se ve en la ventana. */
+const RESULTADOS_EN_TARJETA = 2;
 
 @Component({
   selector: 'app-torniquete-mini',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, BuscadorAccesoComponent, FilaAccesoComponent, ModalResultadosAccesoComponent],
   templateUrl: './torniquete-mini.component.html',
   styleUrls: ['./torniquete-mini.component.css']
 })
 export class TorniqueteMiniComponent implements OnInit {
   @Output() verTodos = new EventEmitter<void>();
+  @ViewChild(BuscadorAccesoComponent) buscador?: BuscadorAccesoComponent;
 
   private asistenciaService = inject(AsistenciaService);
-  private alumnoService = inject(AlumnoService);
+  private busquedaService = inject(BusquedaAlumnosService);
   private bitacoraService = inject(BitacoraService);
   private toastr = inject(ToastrService);
 
-  busqueda = '';
-  registros: any[] = [];
-  alumnos: any[] = [];
+  /** Último ingreso registrado (se muestra mientras no hay búsqueda). */
+  ultimoIngreso: FilaAcceso | null = null;
+
+  /** null = todavía no se buscó nada. */
+  resultados: FilaAcceso[] | null = null;
+  ultimaBusqueda: { criterio: CriterioBusqueda; termino: string } | null = null;
+  buscando = false;
+  registrandoId: number | null = null;
+  mostrarModalResultados = false;
+
+  get resultadosEnTarjeta(): FilaAcceso[] {
+    return (this.resultados ?? []).slice(0, RESULTADOS_EN_TARJETA);
+  }
+
+  get resultadosOcultos(): number {
+    return Math.max(0, (this.resultados?.length ?? 0) - RESULTADOS_EN_TARJETA);
+  }
 
   ngOnInit() {
     this.cargarDatos();
   }
 
+  /** Recarga el último ingreso. Lo usa también la pantalla de recepción. */
   cargarDatos() {
-    this.alumnoService.obtenerAlumnos().subscribe({
-      next: (listaAlumnos) => {
-        this.alumnos = Array.isArray(listaAlumnos) ? listaAlumnos : [];
-      },
-      error: () => {
-        this.alumnos = [];
-      }
-    });
-
     this.asistenciaService.obtenerAsistenciasHoy().subscribe({
       next: (data) => {
-        const lista = Array.isArray(data) ? data : [];
-        this.registros = lista.map(item => ({
-          id: item.id,
-          alumno_id: item.alumno,
-          hora: item.hora || this.formatearHora(item.fecha_hora),
-          nombre: String(item.nombre || 'ATLETA KOMBAT').toUpperCase(),
-          dni: String(item.dni || ''),
-          plan: String(item.plan || '1'),
-          academia: item.academia || 'Kombat',
-          estado: item.estado_acceso || item.estado || 'Permitido'
-        }));
+        const item = Array.isArray(data) ? data[0] : null;
+        this.ultimoIngreso = item
+          ? {
+              id: item.id,
+              alumnoId: item.alumno,
+              hora: item.hora || this.formatearHora(item.fecha_hora),
+              nombre: String(item.nombre || 'ATLETA KOMBAT').toUpperCase(),
+              dni: String(item.dni || ''),
+              plan: String(item.plan || '1'),
+              academia: item.academia || 'Kombat',
+              estado: item.estado_acceso || item.estado || 'Permitido'
+            }
+          : null;
       },
       error: () => {
-        this.registros = [];
+        this.ultimoIngreso = null;
       }
     });
   }
 
-  private formatearHora(fechaIso: string): string {
-    if (!fechaIso) {
-      return new Date().toLocaleTimeString('es-BO', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      });
-    }
-    const d = new Date(fechaIso);
-    if (isNaN(d.getTime())) return String(fechaIso);
-    return d.toLocaleTimeString('es-BO', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
-  }
-
-  get registrosFiltrados(): any[] {
-    const termino = String(this.busqueda || '').toLowerCase().trim();
-    if (!termino) {
-      return this.registros.slice(0, 1);
-    }
-
-    const coincidenciasAsistencia = this.registros.filter(reg => {
-      const nom = String(reg.nombre || '').toLowerCase();
-      const ci = String(reg.dni || '').toLowerCase();
-      const acad = String(reg.academia || '').toLowerCase();
-      return nom.includes(termino) || ci.includes(termino) || acad.includes(termino);
-    });
-
-    const dnisEnLista = new Set(coincidenciasAsistencia.map(r => String(r.dni)));
-    const coincidenciasPadron = this.alumnos
-      .filter(a => {
-        const nom = `${a.nombre || ''} ${a.apellidos || ''}`.toLowerCase();
-        const ci = String(a.dni || '').toLowerCase();
-        const coincide = nom.includes(termino) || ci.includes(termino);
-        return coincide && !dnisEnLista.has(String(a.dni || ''));
-      })
-      .map(a => ({
-        id: a.id,
-        alumno_id: a.id,
-        hora: 'Listo para ingreso',
-        nombre: `${a.nombre || ''} ${a.apellidos || ''}`.trim().toUpperCase(),
-        dni: String(a.dni || ''),
-        plan: String(a.plan_id || '1'),
-        academia: a.academia_origen || 'Kombat',
-        estado: a.estado || 'Activo'
-      }));
-
-    return [...coincidenciasAsistencia, ...coincidenciasPadron].slice(0, 2);
-  }
-
-  marcarIngreso() {
-    const termino = String(this.busqueda || '').trim();
-    if (!termino) {
+  buscar(evento: { criterio: CriterioBusqueda; termino: string }) {
+    if (!evento.termino) {
       this.toastr.warning(
-        'Escribe el CI o nombre del atleta en el buscador.',
+        evento.criterio === 'ci' ? 'Escribe o escanea el CI del atleta.' : 'Escribe el nombre del atleta.',
         'Torniquete'
       );
       return;
     }
 
-    const encontrado = this.alumnos.find(a => {
-      const ci = String(a.dni || '').trim().toLowerCase();
-      const nom = `${a.nombre || ''} ${a.apellidos || ''}`.toLowerCase();
-      return ci === termino.toLowerCase() || nom.includes(termino.toLowerCase());
+    this.buscando = true;
+    this.busquedaService.buscar(evento.criterio, evento.termino).subscribe({
+      next: (alumnos) => {
+        this.buscando = false;
+        this.ultimaBusqueda = evento;
+        this.resultados = alumnos.map(a => this.aFila(a));
+        this.mostrarModalResultados = false;
+      },
+      error: (err) => {
+        this.buscando = false;
+        this.toastr.error(err?.error?.error ?? 'No se pudo realizar la búsqueda.', 'Error');
+      }
     });
+  }
 
-    if (!encontrado) {
-      this.toastr.error(
-        `No se encontro ningun atleta con "${termino}".`,
-        'Acceso Denegado'
-      );
-      return;
+  limpiarBusqueda() {
+    this.resultados = null;
+    this.ultimaBusqueda = null;
+    this.mostrarModalResultados = false;
+  }
+
+  abrirModalResultados() {
+    if (this.resultados?.length) this.mostrarModalResultados = true;
+  }
+
+  async marcarIngreso(fila: FilaAcceso) {
+    if (this.registrandoId !== null) return;
+
+    if (fila.membresiaVigente === false) {
+      const confirmacion = await Swal.fire({
+        title: 'Membresía no vigente',
+        text: fila.vencimientoMembresia
+          ? `La membresía de ${fila.nombre} venció el ${fila.vencimientoMembresia}. ¿Registrar el ingreso igual?`
+          : `${fila.nombre} no tiene pagos registrados. ¿Registrar el ingreso igual?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, registrar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#111827'
+      });
+      if (!confirmacion.isConfirmed) return;
     }
 
+    this.registrandoId = fila.alumnoId;
     this.asistenciaService.marcarIngreso({
-      alumno: encontrado.id,
+      alumno: fila.alumnoId,
       estado_acceso: 'Permitido'
     }).subscribe({
       next: () => {
-        const nom = `${encontrado.nombre || ''} ${encontrado.apellidos || ''}`
-          .trim()
-          .toUpperCase();
+        this.registrandoId = null;
         this.bitacoraService.registrarEvento(
           'Ingreso Torniquete',
           'Control de Acceso',
-          `Acceso permitido a ${nom} (CI: ${encontrado.dni || 'S/N'})`
+          `Acceso permitido a ${fila.nombre} (CI: ${fila.dni || 'S/N'})`
         ).subscribe();
 
-        this.toastr.success(`Bienvenido ${nom}`, 'Acceso Permitido');
-        this.busqueda = '';
+        this.toastr.success(`Bienvenido ${fila.nombre}`, 'Acceso Permitido');
+        this.buscador?.limpiar();
+        this.limpiarBusqueda();
         this.cargarDatos();
       },
       error: () => {
+        this.registrandoId = null;
         this.toastr.error('No se pudo registrar la asistencia.', 'Error');
       }
     });
   }
 
-  verPerfil(reg: any) {
+  verPerfil(fila: FilaAcceso) {
+    const vigencia = fila.membresiaVigente === undefined
+      ? ''
+      : `<p style="margin: 8px 0;"><strong>Membresía:</strong> ${
+          fila.membresiaVigente
+            ? `Vigente hasta ${fila.vencimientoMembresia}`
+            : (fila.vencimientoMembresia ? `Vencida el ${fila.vencimientoMembresia}` : 'Sin pagos registrados')
+        }</p>`;
+
     Swal.fire({
-      title: reg.nombre,
+      title: this.escaparHtml(fila.nombre),
       html: `
         <div style="text-align: left; padding: 10px; font-family: Inter, sans-serif; color: #1e293b;">
-          <p style="margin: 8px 0;"><strong>CI / Documento:</strong> ${reg.dni || 'Registrado'}</p>
-          <p style="margin: 8px 0;"><strong>Plan Activo:</strong> Plan ID ${reg.plan}</p>
-          <p style="margin: 8px 0;"><strong>Academia:</strong> ${reg.academia}</p>
-          <p style="margin: 8px 0;"><strong>Registro:</strong> ${reg.hora}</p>
-          <p style="margin: 8px 0;"><strong>Estado:</strong> <span style="color: #16a34a; font-weight: 700;">${reg.estado}</span></p>
+          <p style="margin: 8px 0;"><strong>CI / Documento:</strong> ${this.escaparHtml(fila.dni || 'Registrado')}</p>
+          <p style="margin: 8px 0;"><strong>Plan Activo:</strong> Plan ID ${this.escaparHtml(fila.plan)}</p>
+          <p style="margin: 8px 0;"><strong>Academia:</strong> ${this.escaparHtml(fila.academia)}</p>
+          <p style="margin: 8px 0;"><strong>Registro:</strong> ${this.escaparHtml(fila.hora)}</p>
+          ${vigencia}
+          <p style="margin: 8px 0;"><strong>Estado:</strong> <span style="color: #16a34a; font-weight: 700;">${this.escaparHtml(fila.estado)}</span></p>
         </div>
       `,
       icon: 'info',
@@ -180,5 +184,33 @@ export class TorniqueteMiniComponent implements OnInit {
 
   verHistorialCompleto() {
     this.verTodos.emit();
+  }
+
+  private aFila(a: AlumnoEncontrado): FilaAcceso {
+    return {
+      id: a.id,
+      alumnoId: a.id,
+      hora: 'Listo para ingreso',
+      nombre: a.nombre,
+      dni: a.dni,
+      plan: String(a.plan_id ?? '1'),
+      academia: a.academia,
+      estado: a.estado,
+      membresiaVigente: a.membresia_vigente,
+      vencimientoMembresia: a.vencimiento_membresia
+    };
+  }
+
+  private formatearHora(fechaIso: string): string {
+    const d = fechaIso ? new Date(fechaIso) : new Date();
+    if (isNaN(d.getTime())) return String(fechaIso);
+    return d.toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit', hour12: true });
+  }
+
+  /** Los datos vienen de formularios: se escapan antes de insertarlos en el HTML del popup. */
+  private escaparHtml(texto: string): string {
+    return String(texto ?? '').replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string
+    ));
   }
 }

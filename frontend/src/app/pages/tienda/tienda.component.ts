@@ -60,6 +60,7 @@ export class TiendaComponent implements OnInit {
   cargando = false;
   errorCarga = false;
   procesando = false;
+  guardandoArqueo = false;
   pagoEnProcesoId: number | null = null;
 
   private ventasApi: any[] = [];
@@ -137,7 +138,7 @@ export class TiendaComponent implements OnInit {
     const hoy = this.hoyISO();
     this.ventasTurno = this.ventasApi
       .filter(v =>
-        (v.fecha_local || v.fecha) === hoy &&
+        (v.fecha_pago_local || v.fecha_local || v.fecha) === hoy &&
         String(v.metodo_pago || '').toLowerCase() === 'efectivo' &&
         String(v.estado_pago || 'PAGADO').toUpperCase() === 'PAGADO'
       )
@@ -214,6 +215,10 @@ export class TiendaComponent implements OnInit {
     return `${d.getFullYear()}-${mes}-${dia}`;
   }
 
+  get skusExistentes(): string[] {
+    return this.catalogo.map(p => String(p.sku || '').toUpperCase());
+  }
+
   private colorDeCategoria(categoria: string): string {
     const texto = categoria ? categoria : '';
     const suma = [...texto].reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
@@ -285,6 +290,7 @@ export class TiendaComponent implements OnInit {
             items: resumenRegistrado,
             total: r.total,
             estado: r.estado_pago === 'PENDIENTE' ? 'Pendiente de pago' : r.metodo_pago,
+            estadoPago: r.estado_pago,
             vendedor: r.vendedor
           });
         }
@@ -309,13 +315,16 @@ export class TiendaComponent implements OnInit {
     const prefijo = numero.startsWith('591') ? numero : `591${numero}`;
     const rol = venta.rolCliente ? venta.rolCliente : 'Atleta';
     const atendido = venta.vendedor ? venta.vendedor : this.usuarioActual;
+    const pendiente = String(venta.estadoPago || '').toUpperCase() === 'PENDIENTE';
     const texto =
       `Hola *${venta.cliente}* (${rol}), aquí tienes tu ticket de *Kiosko KOMBAT* (${venta.ticket}):\n\n` +
       `*PRODUCTOS:* ${venta.items}\n` +
-      `*TOTAL A PAGAR: Bs ${Number(venta.total).toFixed(2)}*\n` +
+      `*${pendiente ? 'TOTAL A PAGAR' : 'TOTAL PAGADO'}: Bs ${Number(venta.total).toFixed(2)}*\n` +
       `Estado: ${venta.estado}\n` +
       `Entregado por: ${atendido}\n\n` +
-      `Recuerda abonar al finalizar tu entrenamiento. ¡Éxitos en el tatami!`;
+      (pendiente
+        ? `Recuerda abonar al finalizar tu entrenamiento. ¡Éxitos en el tatami!`
+        : `¡Gracias por tu compra! ¡Éxitos en el tatami!`);
 
     const url = `https://wa.me/${prefijo}?text=${encodeURIComponent(texto)}`;
     window.open(url, '_blank');
@@ -323,11 +332,6 @@ export class TiendaComponent implements OnInit {
 
   guardarAjusteStock(evento: { producto: any; modo: 'agregar' | 'fijar'; cantidad: number }) {
     const n = Number(evento.cantidad);
-    if (!Number.isInteger(n) || n < 0 || (evento.modo === 'agregar' && n < 1)) {
-      this.toastr.warning('Ingresa una cantidad válida.', 'Stock');
-      return;
-    }
-
     const cambio = evento.modo === 'agregar' ? { incremento: n } : { stock: n };
     this.productoService.ajustarStock(evento.producto.id, cambio).subscribe({
       next: (r) => {
@@ -395,6 +399,8 @@ export class TiendaComponent implements OnInit {
   }
 
   procesarArqueo(montoFisico: number) {
+    if (this.guardandoArqueo) return;
+    this.guardandoArqueo = true;
     const dif = Math.round((montoFisico - this.ventasTurno) * 100) / 100;
     const nota = dif === 0 ? 'Cuadre exacto' : (dif > 0 ? `Sobrante: Bs ${dif}` : `Faltante: Bs ${Math.abs(dif)}`);
 
@@ -403,10 +409,12 @@ export class TiendaComponent implements OnInit {
       observaciones: `Cierre Tienda. Efectivo esperado por ventas: Bs ${this.ventasTurno.toFixed(2)}. ${nota}`
     }).subscribe({
       next: () => {
+        this.guardandoArqueo = false;
         this.toastr.success(`Arqueo guardado por Bs ${montoFisico}.`, 'Caja Cerrada');
         this.cerrarModales();
       },
       error: () => {
+        this.guardandoArqueo = false;
         this.toastr.error('No se pudo guardar el arqueo.', 'Error');
       }
     });

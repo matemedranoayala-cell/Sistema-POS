@@ -26,7 +26,7 @@
           ></app-entrada-texto>
 
           <div class="opciones-extra">
-            <a href="#" class="enlace-olvido">¿Olvidaste tu contraseña?</a>
+            <button type="button" class="enlace-olvido" (click)="abrirRecuperacion()">¿Olvidaste tu contraseña?</button>
           </div>
 
           <p class="mensaje-error" *ngIf="mensajeError">{{ mensajeError }}</p>
@@ -49,5 +49,46 @@
       <img src="/moess.jpg" alt="Imagen Lateral" class="imagen-decorativa">
     </div>
 
+  </div>
+</div>
+
+<div class="fondo-modal" *ngIf="mostrarRecuperacion" (click)="cerrarRecuperacion()">
+  <div
+    class="panel-recuperacion"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="titulo-recuperacion"
+    (click)="$event.stopPropagation()">
+    <div class="panel-encabezado">
+      <h2 id="titulo-recuperacion">¿Olvidaste tu contraseña?</h2>
+      <button type="button" class="boton-cerrar" aria-label="Cerrar" (click)="cerrarRecuperacion()">×</button>
+    </div>
+
+    <p class="panel-descripcion">
+      Indica tu usuario y tu rol. Se abrirá WhatsApp con un mensaje para el administrador,
+      quien te ayudará a restablecer tu contraseña.
+    </p>
+
+    <label class="campo">
+      <span>Usuario o correo</span>
+      <input type="text" [(ngModel)]="usuarioRecuperacion" placeholder="ejemplo@correo.com">
+    </label>
+
+    <label class="campo">
+      <span>Tu rol</span>
+      <select [(ngModel)]="rolRecuperacion">
+        <option value="" disabled>Selecciona tu rol</option>
+        <option *ngFor="let rol of rolesDisponibles" [value]="rol">{{ rol }}</option>
+      </select>
+    </label>
+
+    <p class="mensaje-error" *ngIf="errorRecuperacion">{{ errorRecuperacion }}</p>
+
+    <div class="panel-acciones">
+      <button type="button" class="boton-secundario" (click)="cerrarRecuperacion()">Cancelar</button>
+      <button type="button" class="boton-whatsapp" (click)="enviarRecuperacionWhatsApp()">
+        Enviar por WhatsApp
+      </button>
+    </div>
   </div>
 </div>

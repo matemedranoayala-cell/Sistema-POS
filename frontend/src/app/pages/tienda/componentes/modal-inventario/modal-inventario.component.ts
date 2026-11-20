@@ -1,6 +1,7 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-modal-inventario',
@@ -14,6 +15,8 @@ export class ModalInventarioComponent {
   @Input() productoInicialAjuste: any = null;
   @Output() cerrar = new EventEmitter<void>();
   @Output() guardarStock = new EventEmitter<{ producto: any; modo: 'agregar' | 'fijar'; cantidad: number }>();
+
+  private toastr = inject(ToastrService);
 
   productoSeleccionado: any = null;
   modoAjuste: 'agregar' | 'fijar' = 'agregar';
@@ -32,11 +35,23 @@ export class ModalInventarioComponent {
   }
 
   confirmarAjuste() {
-    if (!this.productoSeleccionado || this.cantidadAjuste === null) return;
+    if (!this.productoSeleccionado) return;
+    const n = Number(this.cantidadAjuste);
+    const minimo = this.modoAjuste === 'agregar' ? 1 : 0;
+    if (this.cantidadAjuste === null || !Number.isInteger(n) || n < minimo) {
+      // El formulario queda abierto para corregir el valor.
+      this.toastr.warning(
+        this.modoAjuste === 'agregar'
+          ? 'Ingresa un número entero de unidades mayor a 0.'
+          : 'Ingresa el stock contado (número entero, 0 o más).',
+        'Cantidad Inválida'
+      );
+      return;
+    }
     this.guardarStock.emit({
       producto: this.productoSeleccionado,
       modo: this.modoAjuste,
-      cantidad: Number(this.cantidadAjuste)
+      cantidad: n
     });
     this.productoSeleccionado = null;
   }
