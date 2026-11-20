@@ -20,4 +20,10 @@ describe('ModalGestionUsuariosComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should protect ADMIN and SUPERADMIN accounts from personnel edits', () => {
+    expect(component.esAdministrador('ADMIN')).toBeTrue();
+    expect(component.esAdministrador('SUPERADMIN')).toBeTrue();
+    expect(component.esAdministrador('COACH')).toBeFalse();
+  });
 });

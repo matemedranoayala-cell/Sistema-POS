@@ -11,9 +11,21 @@ from infrastructure.django_apps.core_db.models import Asistencia, Pago, Venta
 
 
 class DjangoUsuarioRepository:
+    def rol_django(self, usuario):
+        if usuario.is_superuser:
+            return 'SUPERADMIN'
+        if usuario.first_name:
+            return self.normalizar_rol(usuario.first_name)
+        if usuario.is_staff:
+            return 'ADMIN'
+        return 'COACH' if '@' in usuario.username else 'RECEPCION'
+
     def normalizar_rol(self, rol_bruto):
         rol_str = str(rol_bruto or 'RECEPCION').upper().strip()
-        if 'ADMIN' in rol_str or 'SUPER' in rol_str or 'ENCARGADO_GENERAL' in rol_str:
+        rol_compacto = rol_str.replace(' ', '').replace('_', '').replace('-', '')
+        if 'SUPERADMIN' in rol_compacto:
+            return 'SUPERADMIN'
+        if 'ADMIN' in rol_compacto or 'ENCARGADOGENERAL' in rol_compacto:
             return 'ADMIN'
         if 'TIENDA' in rol_str or 'KIOSKO' in rol_str:
             return 'TIENDA'
@@ -22,6 +34,8 @@ class DjangoUsuarioRepository:
         return 'RECEPCION'
 
     def obtener_area(self, rol_limpio):
+        if rol_limpio == 'SUPERADMIN':
+            return 'Administración del sistema'
         if rol_limpio == 'ADMIN':
             return 'Administración'
         if rol_limpio == 'TIENDA':
@@ -59,13 +73,7 @@ class DjangoUsuarioRepository:
                 if not uname or uname.lower() in vistos:
                     continue
                 vistos.add(uname.lower())
-                if u.is_superuser or u.is_staff:
-                    rol_base = 'ADMIN'
-                elif u.first_name:
-                    rol_base = u.first_name
-                else:
-                    rol_base = 'COACH' if '@' in uname else 'RECEPCION'
-                rol_str = self.normalizar_rol(rol_base)
+                rol_str = self.rol_django(u)
                 resultados.append({
                     'id': u.id,
                     'username': uname,

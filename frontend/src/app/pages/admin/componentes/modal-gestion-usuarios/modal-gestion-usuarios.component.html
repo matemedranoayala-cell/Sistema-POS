@@ -18,13 +18,19 @@
         </tr>
         </thead>
         <tbody>
+        <tr *ngIf="errorCarga">
+          <td colspan="4" style="padding: 20px 8px; color: #b91c1c; text-align: center;">{{ errorCarga }}</td>
+        </tr>
+        <tr *ngIf="!errorCarga && usuariosPaginados.length === 0">
+          <td colspan="4" style="padding: 20px 8px; color: #6b7280; text-align: center;">No hay personal registrado.</td>
+        </tr>
         <tr *ngFor="let user of usuariosPaginados" style="border-bottom: 1px solid #f3f4f6;">
           <td style="padding: 12px 8px; font-weight: 500; color: #1f2937;">
             {{ user.username }}<br>
             <small style="color:#6b7280; font-size:0.75rem;">{{ user.area }}</small>
           </td>
           <td style="padding: 12px 8px;">
-              <span [ngStyle]="{'color': user.rol === 'ADMIN' ? '#d97706' : (user.rol === 'TIENDA' ? '#15803d' : (user.rol === 'RECEPCION' ? '#2563eb' : '#059669'))}" style="font-size: 0.75rem; font-weight: bold; background: #f3f4f6; padding: 4px 8px; border-radius: 4px; border: 1px solid #e5e7eb;">
+              <span [ngStyle]="{'color': user.rol === 'SUPERADMIN' ? '#7c3aed' : (user.rol === 'ADMIN' ? '#d97706' : (user.rol === 'TIENDA' ? '#15803d' : (user.rol === 'RECEPCION' ? '#2563eb' : '#059669')))}" style="font-size: 0.75rem; font-weight: bold; background: #f3f4f6; padding: 4px 8px; border-radius: 4px; border: 1px solid #e5e7eb;">
                 {{ user.rol }}
               </span>
           </td>
@@ -33,8 +39,8 @@
             <span *ngIf="!user.activo" style="color: #ef4444; font-size: 0.85rem;">● Inactivo</span>
           </td>
           <td style="padding: 12px 8px; text-align: right; display: flex; justify-content: flex-end; gap: 8px;">
-            <button (click)="editar(user)" [style.opacity]="user.rol === 'ADMIN' ? '0.3' : '1'" [disabled]="user.rol === 'ADMIN'" style="background: transparent; color: #2563eb; border: 1px solid #93c5fd; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">Editar</button>
-            <button (click)="inhabilitar(user)" [style.opacity]="user.rol === 'ADMIN' ? '0.3' : '1'" [disabled]="user.rol === 'ADMIN'" [style.background]="user.activo ? '#ef4444' : '#10b981'" style="color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">
+            <button (click)="editar(user)" [style.opacity]="esAdministrador(user.rol) ? '0.3' : '1'" [disabled]="esAdministrador(user.rol)" style="background: transparent; color: #2563eb; border: 1px solid #93c5fd; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">Editar</button>
+            <button (click)="inhabilitar(user)" [style.opacity]="esAdministrador(user.rol) ? '0.3' : '1'" [disabled]="esAdministrador(user.rol)" [style.background]="user.activo ? '#ef4444' : '#10b981'" style="color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">
               {{ user.activo ? 'Inhabilitar' : 'Habilitar' }}
             </button>
           </td>

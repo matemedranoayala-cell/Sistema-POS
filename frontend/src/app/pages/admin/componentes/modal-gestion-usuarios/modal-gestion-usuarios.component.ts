@@ -18,6 +18,7 @@ export class ModalGestionUsuariosComponent implements OnInit {
 
   usuarios: any[] = [];
   usuariosPaginados: any[] = [];
+  errorCarga = '';
   paginaActual = 1;
   itemsPorPagina = 8;
   totalPaginas = 1;
@@ -34,40 +35,32 @@ export class ModalGestionUsuariosComponent implements OnInit {
           username: u.username || u.nombre,
           rol: (u.rol || 'RECEPCION').toUpperCase(),
           activo: u.activo !== undefined ? u.activo : true,
-          area: u.area || ((u.rol || '').toUpperCase() === 'COACH' ? 'Área de Tatami' : ((u.rol || '').toUpperCase() === 'TIENDA' ? 'Tienda' : ((u.rol || '').toUpperCase() === 'ADMIN' ? 'Administración' : 'Recepción / Caja')))
+          area: u.area || this.obtenerArea(u.rol)
         }));
-        if (usuariosBD.length <= 3) {
-          const adicionales = this.obtenerUsuariosRespaldo().filter(
-            sim => !usuariosBD.some(bd => bd.username.toLowerCase() === sim.username.toLowerCase())
-          );
-          this.usuarios = [...usuariosBD, ...adicionales];
-        } else {
-          this.usuarios = usuariosBD;
-        }
-
+        this.errorCarga = '';
+        this.usuarios = usuariosBD;
         this.actualizarPaginacion();
       },
       error: () => {
-        this.usuarios = this.obtenerUsuariosRespaldo();
+        this.usuarios = [];
+        this.errorCarga = 'No se pudo cargar el personal. Verifica la conexión con el servidor.';
         this.actualizarPaginacion();
       }
     });
   }
 
-  obtenerUsuariosRespaldo() {
-    return [
-      { id: 101, username: 'Mauricio', rol: 'ADMIN', area: 'Administración', activo: true },
-      { id: 102, username: 'recepcion55', rol: 'RECEPCION', area: 'Recepción / Caja', activo: true },
-      { id: 103, username: 'mauricio@gmail.com', rol: 'COACH', area: 'Área de Tatami', activo: true },
-      { id: 104, username: 'recepcion_mañana', rol: 'RECEPCION', area: 'Recepción / Caja', activo: true },
-      { id: 105, username: 'coach_boxeo', rol: 'COACH', area: 'Área de Tatami', activo: true },
-      { id: 106, username: 'caja_tarde', rol: 'RECEPCION', area: 'Recepción / Caja', activo: false },
-      { id: 107, username: 'coach_muaythai', rol: 'COACH', area: 'Área de Tatami', activo: true },
-      { id: 108, username: 'recepcion_noche', rol: 'RECEPCION', area: 'Recepción / Caja', activo: true },
-      { id: 109, username: 'coach_mma', rol: 'COACH', area: 'Área de Tatami', activo: true },
-      { id: 110, username: 'apoyo_fines', rol: 'RECEPCION', area: 'Recepción / Caja', activo: true },
-      { id: 111, username: 'coach_bjj', rol: 'COACH', area: 'Área de Tatami', activo: true }
-    ];
+  private obtenerArea(rol: string): string {
+    switch ((rol || '').toUpperCase()) {
+      case 'SUPERADMIN': return 'Administración del sistema';
+      case 'ADMIN': return 'Administración';
+      case 'COACH': return 'Área de Tatami';
+      case 'TIENDA': return 'Tienda';
+      default: return 'Recepción / Caja';
+    }
+  }
+
+  esAdministrador(rol: string): boolean {
+    return ['ADMIN', 'SUPERADMIN'].includes((rol || '').toUpperCase());
   }
 
   actualizarPaginacion() {
@@ -85,7 +78,7 @@ export class ModalGestionUsuariosComponent implements OnInit {
   }
 
   inhabilitar(usuario: any) {
-    if (usuario.rol === 'ADMIN' || usuario.rol === 'SUPERADMIN') {
+    if (this.esAdministrador(usuario.rol)) {
       this.toastr.error('No se puede inhabilitar a un Administrador.', 'Acción Denegada');
       return;
     }
@@ -119,7 +112,7 @@ export class ModalGestionUsuariosComponent implements OnInit {
   }
 
   editar(usuario: any) {
-    if (usuario.rol === 'ADMIN' || usuario.rol === 'SUPERADMIN') {
+    if (this.esAdministrador(usuario.rol)) {
       this.toastr.error('El Administrador solo puede editar a Recepcionistas y Coaches.', 'Acción Denegada');
       return;
     }
